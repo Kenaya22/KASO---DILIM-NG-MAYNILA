@@ -3,7 +3,7 @@
    ========================================================= */
 (function () {
   'use strict';
-  const { CHARS, CASES, PROLOGUE, METAS, SHOP, CHAPTERS } = window.KASO;
+  const { CHARS, CASES, PROLOGUE, METAS, SHOP, CHAPTERS, BOSS, ENDING, CREDITS } = window.KASO;
   const ART = window.ART, SFX = window.SFX;
   const stage = document.getElementById('stage');
   let SCALE = 1;
@@ -11,11 +11,19 @@
 
   /* ---------------- SAVE ---------------- */
   const KEY = 'kaso-dilim-save-v1';
-  const DEF = () => ({ pesos: 0, solved: {}, metas: [], owned: [], seenPrologue: false, sound: true, chapterDone: {}, tut: {}, medals: [], thermos: 0, musicVol: 0.5, sfxVol: 0.8 });
+  const DEF = () => ({ pesos: 0, solved: {}, metas: [], owned: [], seenPrologue: false, sound: true, chapterDone: {}, tut: {}, medals: [], thermos: 0, musicVol: 0.5, sfxVol: 0.8, run: null, bossWon: false });
   let save = DEF();
   try { const raw = localStorage.getItem(KEY); if (raw) save = Object.assign(DEF(), JSON.parse(raw)); } catch (e) { /* no storage */ }
   if (save.finale) { save.chapterDone[1] = true; delete save.finale; }
-  function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) { /* ignore */ } }
+  function persist() { save.savedAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) { /* ignore */ } }
+
+  /* ---------------- DEVELOPER MODE STATE ---------------- */
+  const DEVKEY = 'kaso-dilim-dev-v1';
+  let DEV = { on: false, infTime: false, infKape: false, answers: false, unlockAll: false };
+  try { const d = localStorage.getItem(DEVKEY); if (d) DEV = Object.assign(DEV, JSON.parse(d)); } catch (e) { /* ignore */ }
+  function persistDev() { try { localStorage.setItem(DEVKEY, JSON.stringify(DEV)); } catch (e) { /* ignore */ } }
+  const passHash = (t) => [...t].reduce((a, c) => (Math.imul(a, 31) + c.charCodeAt(0)) >>> 0, 2166136261);
+  const DEV_HASH = 4021718528;
   SFX.setEnabled(save.sound); SFX.setMusicVol(save.musicVol); SFX.setSfxVol(save.sfxVol);
 
   /* ---------------- MEDALS ---------------- */
@@ -29,6 +37,8 @@
     { id: 'walanglusot', name: 'Walang Lusot', desc: 'Basagin ang lahat ng kasinungalingan ng salarin sa isang kaso.' },
     { id: 'kab1', name: 'Kabanata 1', desc: 'Tapusin ang Kabanata 1.' },
     { id: 'kab2', name: 'Kabanata 2', desc: 'Tapusin ang Kabanata 2.' },
+    { id: 'kab3', name: 'Kabanata 3', desc: 'Tapusin ang Kabanata 3 at mahuli si Ang Anino.' },
+    { id: 'anino', name: 'Huli Ka, Anino!', desc: 'Manalo sa Huling Interogasyon nang walang maling TUTOL.' },
     { id: 'kolektor', name: 'Kolektor', desc: 'Bilhin ang lahat ng gamit sa mesa.' },
     { id: 'alamat', name: 'Alamat ng Maynila', desc: 'Makakuha ng 3★ sa lahat ng kaso.' }
   ];
@@ -135,17 +145,33 @@
     const s = show(`<div class="screen title">
       <div class="shade"></div>
       <div class="rain" style="inset:0;opacity:.35"></div>
-      <div class="tag">Isang misteryo ng Maynila.<br>Anim na kaso. Isang anino.</div>
+      <div class="tag">Isang misteryo ng Maynila.<br>Siyam na kaso. Isang anino.</div>
       <div class="menu">
         ${has ? '<button class="btn primary pulse" id="go">ITULOY ▶</button><button class="btn dark" id="new">BAGONG LARO</button>' : '<button class="btn primary pulse" id="go">SIMULAN ▶</button>'}
+        <button class="btn dark" id="load">SAVE / LOAD</button>
         <button class="btn dark" id="fs" title="Fullscreen">⛶</button>
       </div>
-      <div class="ver">Kabanata 1–2 · Landscape 16:9</div>
+      <div class="ver">Kabanata 1–3 · Landscape 16:9</div>
     </div>`);
-    tap($('#go', s), () => { SFX.rain(true); SFX.music('noir'); if (!save.seenPrologue) { komiks(PROLOGUE, () => { save.seenPrologue = true; persist(); startCase(CASES[0]); }); } else desk(); });
+    tap($('#go', s), () => {
+      SFX.rain(true); SFX.music('noir');
+      if (!save.seenPrologue) { komiks(PROLOGUE, () => { save.seenPrologue = true; persist(); startCase(CASES[0]); }); return; }
+      if (save.run && caseById(save.run.cid)) { resumePrompt(); return; }
+      desk();
+    });
+    tap($('#load', s), () => { SFX.click(); saveMenu(); });
     const nw = $('#new', s);
     if (nw) tap(nw, () => confirmBox('Burahin ang lahat ng progreso at magsimula ulit?', () => { const keep = { sound: save.sound, musicVol: save.musicVol, sfxVol: save.sfxVol }; save = Object.assign(DEF(), keep); persist(); SFX.rain(true); komiks(PROLOGUE, () => { save.seenPrologue = true; persist(); startCase(CASES[0]); }); }));
     tap($('#fs', s), toggleFullscreen);
+  }
+
+  function resumePrompt() {
+    const r = save.run, c = caseById(r.cid);
+    const ph = { outline: 'Yugto 2 · Buod ng Kaso', inv: 'Yugto 3 · Paghahanap ng Ebidensya', files: 'Yugto 4 · Talaan', room: 'Yugto 5 · Interogasyon' }[r.phase] || 'Simula';
+    const o = el(`<div class="overlay"><div class="card"><h2>MAY NAKA-SAVE NA KASO</h2><p>Kaso #${c.num} · ${esc(c.title)}<br><b>${esc(ph)}</b></p><div class="row"><button class="btn primary" id="y">ITULOY ANG KASO ▶</button><button class="btn dark" id="n">PUMUNTA SA OPISINA</button></div></div></div>`);
+    stage.appendChild(o);
+    tap($('#y', o), () => { o.remove(); resumeRun(); });
+    tap($('#n', o), () => { o.remove(); desk(); });
   }
 
   function confirmBox(msg, yes) {
@@ -160,7 +186,7 @@
      ========================================================= */
   function isUnlocked(c) {
     const i = CASES.indexOf(c);
-    if (i === 0) return true;
+    if (i === 0 || (DEV.on && DEV.unlockAll)) return true;
     const prev = CASES[i - 1];
     if (!save.solved[prev.id]) return false;
     if (chapterOf(c) !== chapterOf(prev) && !save.chapterDone[chapterOf(prev)]) return false;
@@ -176,7 +202,7 @@
     let status;
     if (nc) status = `Bagong tawag! Sagutin ang <b>telepono</b> para sa Kaso #${nc.num}.`;
     else if (pc) status = `Kumpleto ang mga palatandaan ng ${esc(pc.title.split(':')[0])}. Pumunta sa <b>corkboard</b>.`;
-    else if (lastDone && lastDone.n === CHAPTERS.length) status = 'Tapos ang Kabanata 2. Nakatakas si Kapitan Dizon... Itutuloy sa Kabanata 3.';
+    else if (lastDone && lastDone.n === CHAPTERS.length) status = 'Nahuli na si Ang Anino. Lutasin ulit ang mga kaso para sa 3★ at mga medalya.';
     else status = 'Tahimik ang gabi.';
     const s = show(`<div class="screen desk">
       ${ART.desk(save)}
@@ -185,6 +211,8 @@
         <div class="title-txt">OPISINA NI INSP. MATEO REYES <small>${esc(CHAPTERS[currentChapter() - 1].title)}</small></div>
         <div class="chip" title="Pera"><span class="peso">₱</span><span>${save.pesos}</span></div>
         <div class="chip" title="Nalutas na kaso">📁 ${solvedN}/${CASES.length}</div>
+        ${save.run && caseById(save.run.cid) ? '<button class="btn small primary" id="resume">▶ ITULOY #' + caseById(save.run.cid).num + '</button>' : ''}
+        <button class="btn small dark" id="saveb">SAVE</button>
         <button class="btn small gold" id="shop">TINDAHAN</button>
         <button class="btn small dark" id="med">MEDALYA ${save.medals.length}/${MEDALS.length}</button>
         <button class="iconbtn" id="set" title="Settings" style="width:44px;height:44px;font-size:20px">⚙</button>
@@ -205,6 +233,8 @@
     tap($('#hs-fold', s), () => { SFX.flip(); howTo(); });
     tap($('#hs-mug', s), () => { SFX.good(); toast(save.thermos ? `May ${save.thermos} thermos ka: +${save.thermos * 2} kape sa susunod na kaso.` : '"Barakong Batangas. Mapait — tulad ng katotohanan." — Mateo'); });
     tap($('#shop', s), () => { SFX.click(); shop(); });
+    tap($('#saveb', s), () => { SFX.click(); saveMenu(); });
+    if ($('#resume', s)) tap($('#resume', s), () => { SFX.stamp(); resumeRun(); });
     tap($('#med', s), () => { SFX.click(); medals(); });
     tap($('#set', s), () => { SFX.click(); settings(); });
     tap($('#fs', s), toggleFullscreen);
@@ -213,6 +243,7 @@
   }
 
   function toast(msg) {
+    $$('.toast').forEach((x) => x.remove());
     const t = el(`<div class="toast">${esc(msg)}</div>`);
     stage.appendChild(t); setTimeout(() => t.remove(), 3000);
   }
@@ -277,8 +308,12 @@
       <label for="set-mus">Musika</label><input type="range" id="set-mus" min="0" max="1" step="0.05" value="${save.musicVol}">
       <label for="set-sfx">Sound effects</label><input type="range" id="set-sfx" min="0" max="1" step="0.05" value="${save.sfxVol}">
       <label>Tutorial</label><button class="btn small dark" id="set-tut">IPAKITA ULIT</button>
+      <label>Save / Load</label><button class="btn small gold" id="set-save">BUKSAN</button>
       <label>Progreso</label><button class="btn small primary" id="set-reset">BURAHIN LAHAT</button>
+      <label>Developer</label><button class="btn small dark" id="set-dev">${DEV.on ? 'DEV PANEL 🛠' : 'DEVELOPER MODE 🔒'}</button>
     </div>`);
+    tap($('#set-save', o), () => { o.remove(); saveMenu(); });
+    tap($('#set-dev', o), () => { o.remove(); if (DEV.on) devPanel(); else devLogin(); });
     tap($('#set-snd', o), () => { save.sound = !save.sound; persist(); SFX.setEnabled(save.sound); o.remove(); settings(); });
     $('#set-mus', o).addEventListener('input', (e) => { save.musicVol = +e.target.value; SFX.setMusicVol(save.musicVol); persist(); });
     $('#set-sfx', o).addEventListener('input', (e) => { save.sfxVol = +e.target.value; SFX.setSfxVol(save.sfxVol); persist(); });
@@ -367,11 +402,30 @@
      CASE FLOW
      ========================================================= */
   let run = null;
-  function startCase(c) {
+  function useKape() { if (DEV.on && DEV.infKape) return; run.kape = Math.max(0, run.kape - 1); }
+  function newRun(c) {
     const bonus = save.thermos * 2;
-    if (save.thermos) { save.thermos = 0; persist(); }
-    run = { c, found: new Set(), kape: 5 + bonus, hints: 0, timeouts: 0, wrong: 0, misses: 0, badTutol: 0, broken: new Set(), checked: new Set(), unlocked: new Set(), seenRec: new Set(), timeLeft: c.time, started: Date.now(), suspect: null, slot1: null, slot2: null, sceneDone: false };
-    komiks(c.intro, () => outline(c));
+    if (save.thermos) save.thermos = 0;
+    run = { c, phase: 'intro', found: new Set(), kape: 5 + bonus, hints: 0, timeouts: 0, wrong: 0, misses: 0, badTutol: 0, broken: new Set(), checked: new Set(), unlocked: new Set(), seenRec: new Set(), timeLeft: c.time, started: Date.now(), suspect: null, slot1: null, slot2: null, sceneDone: false };
+    persistRun();
+  }
+  function startCase(c) { newRun(c); komiks(c.intro, () => outline(c)); }
+  const SETS = ['found', 'broken', 'checked', 'unlocked', 'seenRec'];
+  function persistRun(phase) {
+    if (!run) return;
+    if (phase) run.phase = phase;
+    const o = { cid: run.c.id, elapsed: Date.now() - run.started };
+    Object.keys(run).forEach((k) => { if (k === 'c' || k === 'started') return; o[k] = SETS.includes(k) ? [...run[k]] : run[k]; });
+    save.run = o; persist();
+  }
+  function resumeRun() {
+    const r = save.run, c = r && caseById(r.cid);
+    if (!c) { desk(); return; }
+    run = { c, started: Date.now() - (r.elapsed || 0) };
+    Object.keys(r).forEach((k) => { if (k === 'cid' || k === 'elapsed') return; run[k] = SETS.includes(k) ? new Set(r[k]) : r[k]; });
+    SFX.rain(false);
+    const go = { outline, inv: investigate, files, room: interrogate }[run.phase] || outline;
+    go(c);
   }
 
   function topbar(c, phase, extra) {
@@ -381,11 +435,11 @@
       ${extra || ''}
     </div>`;
   }
-  function bindBack(s) { tap($('#tb-back', s), () => confirmBox('Bumalik sa opisina? Mawawala ang progreso sa kasong ito.', () => desk())); }
+  function bindBack(s) { tap($('#tb-back', s), () => { persistRun(); desk(); toast('Naka-save ang kaso. Pindutin ang ▶ ITULOY para bumalik.'); }); }
 
   /* ---------------- PHASE 2: OUTLINE ---------------- */
   function outline(c) {
-    SFX.rain(false); SFX.music('noir');
+    SFX.rain(false); SFX.music('noir'); persistRun('outline');
     const v = c.victim;
     const s = show(`<div class="screen outline woodbg">
       ${topbar(c, 'Yugto 2 · Buod ng Kaso at mga Suspek')}
@@ -428,14 +482,15 @@
 
   /* ---------------- PHASE 3: INVESTIGATION ---------------- */
   function investigate(c) {
-    SFX.music('tension');
+    SFX.music('tension'); persistRun('inv');
+    const partner = c.partner || { c: 'jessa', name: 'PO2 JESSA DIMACULANGAN · SOCO' };
     const n = c.clues.length;
     const extra = `<div class="hud-mid"><span class="objective">HANAPIN: ${n}</span><div class="flipclock" id="clock"></div></div>${kapeHTML(run.kape)}<button class="hintbtn" id="zoom" title="Zoom">⊕ ZOOM</button><button class="hintbtn" id="hint" title="Suriin (−1 kape)">${LENS_SVG}SURIIN −1☕</button><button class="iconbtn" id="pause" style="width:44px;height:44px;font-size:20px" title="Pause">❚❚</button>`;
     const s = show(`<div class="screen inv">
       ${topbar(c, 'Yugto 3 · Hanapin ang Ebidensya', extra)}
       <div class="spotpanel cctv" id="pA" style="left:12px"><svg viewBox="0 0 600 400" preserveAspectRatio="none">${c.scene(false)}<g class="marks"></g></svg><div class="plabel"><span class="rec"></span>${esc(c.beforeLabel)}</div><div class="zoomtag" hidden></div></div>
       <div class="spotpanel soco" id="pB" style="left:648px"><svg viewBox="0 0 600 400" preserveAspectRatio="none">${c.scene(true)}<g class="marks"></g></svg><div class="plabel">📷 ${esc(c.afterLabel)}</div><div class="zoomtag" hidden></div></div>
-      <div class="talk"><div class="pp">${charSVG('jessa', 'determined')}</div><div class="saybox" id="say"><span class="who">PO2 JESSA DIMACULANGAN · SOCO</span><span id="saytx"></span></div></div>
+      <div class="talk"><div class="pp">${charSVG(partner.c, 'determined')}</div><div class="saybox" id="say"><span class="who">${esc(partner.name)}</span><span id="saytx"></span></div></div>
       <div class="tray"><div class="th">EBIDENSYANG NAKALAP <span id="cnt">0 / ${n}</span></div><div class="slots" style="grid-template-columns:repeat(${n},1fr)">${c.clues.map((cl) => `<div class="cslot" data-c="${cl.id}">?</div>`).join('')}</div><div class="lastfound" id="last">Ikumpara ang dalawang larawan. Ano ang nagbago?</div></div>
     </div>`);
     bindBack(s);
@@ -454,7 +509,9 @@
     let paused = false, done = false;
     const iv = setInterval(() => {
       if (paused || done) return;
-      run.timeLeft--; drawClock();
+      if (!(DEV.on && DEV.infTime)) run.timeLeft--;
+      drawClock();
+      if (run.timeLeft % 5 === 0) persistRun();
       if (run.timeLeft <= 10 && run.timeLeft > 0) SFX.tick();
       if (run.timeLeft <= 0) timeout();
     }, 1000);
@@ -488,6 +545,7 @@
       if (!silent) { $('#last', s).innerHTML = `<b>${esc(cl.name)}</b><br>${esc(cl.info)}`; say(cl.say); }
     }
     run.found.forEach((id) => markFound(c.clues.find((x) => x.id === id), true));
+    if (DEV.on && DEV.answers) c.clues.forEach((cl) => { if (!run.found.has(cl.id)) $('.marks', pB).insertAdjacentHTML('beforeend', `<circle class="dev-ans" cx="${cl.x}" cy="${cl.y}" r="${cl.r}"/>`); });
 
     function hit(p, e) {
       if (paused || done) return;
@@ -499,8 +557,9 @@
         [[cl.x, cl.y]].concat(cl.alt || []).forEach(([cx, cy]) => { const d = Math.hypot(cx - x, cy - y); if (d < cl.r + 6 + tol && d < bd) { bd = d; best = cl; } });
       });
       if (best) {
-        run.found.add(best.id); SFX.good(); markFound(best);
+        run.found.add(best.id); SFX.good(); markFound(best); persistRun();
         $$('.ring-hint', s).forEach((h) => h.remove());
+        $$('.dev-ans', s).forEach((h) => { if (+h.getAttribute('cx') === best.x && +h.getAttribute('cy') === best.y) h.remove(); });
         if (run.found.size === n) complete();
         return;
       }
@@ -561,7 +620,7 @@
       if (run.kape <= 0 || done) return;
       const left = c.clues.filter((cl) => !run.found.has(cl.id));
       if (!left.length) return;
-      run.kape--; run.hints++; refreshKape(); SFX.flip();
+      useKape(); run.hints++; refreshKape(); SFX.flip();
       const cl = left[Math.floor(Math.random() * left.length)];
       $$('.ring-hint', s).forEach((h) => h.remove());
       if (view.w < 599) setView(cl.x - view.w / 2, cl.y - view.h / 2, view.w);
@@ -582,10 +641,10 @@
       const free = run.kape <= 0;
       const o = el(`<div class="overlay"><div class="card"><div class="stamp">UBOS NA ANG ORAS!</div><p>${free ? 'Wala ka nang kape... pero hindi sumusuko ang isang detektib.' : 'Uminom ng kape para sa dagdag na 60 segundo.'}</p><div class="row"><button class="btn primary" id="r">${free ? 'SUBUKAN ULIT (+60s)' : 'MAGKAPE (+60s, −1☕)'}</button></div></div></div>`);
       s.appendChild(o);
-      tap($('#r', o), () => { if (!free) { run.kape--; refreshKape(); } run.timeLeft = 60; drawClock(); o.remove(); paused = false; });
+      tap($('#r', o), () => { if (!free) { useKape(); refreshKape(); } run.timeLeft = 60; drawClock(); o.remove(); paused = false; persistRun(); });
     }
     function complete() {
-      done = true; run.sceneDone = true; SFX.win();
+      done = true; run.sceneDone = true; SFX.win(); persistRun();
       if (run.hints === 0) award('walanghint');
       if (run.misses === 0) award('walangmali');
       if (run.timeLeft >= 60 && run.timeouts === 0) award('mabilis');
@@ -611,7 +670,7 @@
 
   /* ---------------- PHASE 4: FILES ---------------- */
   function files(c) {
-    SFX.music('noir');
+    SFX.music('noir'); persistRun('files');
     const s = show(`<div class="screen files woodbg">
       ${topbar(c, 'Yugto 4 · Talaan at Oras ng Pangyayari', kapeHTML(run.kape))}
       <div class="folder" style="left:26px;top:84px;width:560px;height:560px"><span class="tabname">EBIDENSYA</span><div class="clip"></div>
@@ -657,6 +716,7 @@
         const sus = suspectOf(c, id);
         (sus.check.unlock || []).forEach((u) => run.unlocked.add(u));
         if (sus.check.ok) SFX.stamp(); else SFX.bad();
+        persistRun();
         const sc = $('#tl', s).scrollTop; renderTL(); $('#tl', s).scrollTop = sc; renderEv(); progress();
       }));
     }
@@ -675,7 +735,7 @@
 
   /* ---------------- PHASE 5: INTERROGATION ---------------- */
   function interrogate(c) {
-    SFX.music('room');
+    SFX.music('room'); persistRun('room');
     const s = show(`<div class="screen room">
       <div class="bricks"></div>
       <div class="glow"></div>
@@ -702,7 +762,8 @@
     const refreshKape = () => { const k = $('.kape', s); k.outerHTML = kapeHTML(run.kape); };
 
     function renderCards() {
-      $('#evs', s).innerHTML = items.map((it) => `<div class="ev-card ${it.meta ? 'meta' : ''} ${picked === it.id ? 'picked' : ''} ${(run.slot1 === it.id || run.slot2 === it.id) ? 'used' : ''}" data-id="${it.id}"><div class="ti">${it.thumb}</div><div class="nm">${esc(it.name)}</div><button class="i" data-i="${it.id}" aria-label="Detalye">i</button></div>`).join('');
+      const ansIds = DEV.on && DEV.answers ? [...c.solution.slot1, ...c.solution.slot2] : [];
+      $('#evs', s).innerHTML = items.map((it) => `<div class="ev-card ${ansIds.includes(it.id) ? 'dev-ok' : ''} ${it.meta ? 'meta' : ''} ${picked === it.id ? 'picked' : ''} ${(run.slot1 === it.id || run.slot2 === it.id) ? 'used' : ''}" data-id="${it.id}"><div class="ti">${it.thumb}</div><div class="nm">${esc(it.name)}</div><button class="i" data-i="${it.id}" aria-label="Detalye">i</button></div>`).join('');
     }
     function renderSlots() {
       [1, 2].forEach((k) => {
@@ -717,7 +778,7 @@
     }
     function place(k, id) {
       if (run['slot' + (3 - k)] === id) run['slot' + (3 - k)] = null;
-      run['slot' + k] = id; picked = null; SFX.stamp(); renderCards(); renderSlots();
+      run['slot' + k] = id; picked = null; SFX.stamp(); renderCards(); renderSlots(); persistRun();
     }
     function speak(who, txt) { const sp = $('#speech', s); sp.hidden = false; sp.innerHTML = `<span class="who">${esc(who)}</span>${esc(txt)}`; sp.style.animation = 'none'; void sp.offsetWidth; sp.style.animation = 'pop .25s'; }
     function face(id, expr) { $('#sus', s).innerHTML = charSVG(id, expr || 'neutral'); }
@@ -738,6 +799,7 @@
     }
     renderCards(); renderSlots();
     if (run.suspect) selectSuspect(run.suspect);
+    if (DEV.on && DEV.answers) { const cb = $(`.scard[data-s="${c.solution.culprit}"]`, s); if (cb) cb.classList.add('dev-ok'); }
 
     $$('.scard', s).forEach((b) => tap(b, () => { SFX.tap(); const p = suspectOf(c, b.dataset.s); selectSuspect(p.id); speak(p.name, p.greet); }));
     $$('.slot', s).forEach((sl) => tap(sl, () => {
@@ -766,7 +828,7 @@
       SFX.objection();
       if (run.broken.has(key)) { speak(p.name, st.lie.say); picked = null; renderCards(); renderSlots(); return; }
       if (st.lie && st.lie.ev.includes(picked)) {
-        run.broken.add(key); face(p.id, 'shock'); speak(p.name, st.lie.say);
+        run.broken.add(key); face(p.id, 'shock'); speak(p.name, st.lie.say); persistRun();
         $('.hotseat', s).classList.remove('shake'); void $('.hotseat', s).offsetWidth; $('.hotseat', s).classList.add('shake');
         award('tutol');
         if (p.id === c.solution.culprit && p.statements.every((x, i) => !x.lie || run.broken.has(p.id + ':' + i))) award('walanglusot');
@@ -774,7 +836,7 @@
         picked = null; items = evItems(c, run); renderCards(); renderStatements(); renderSlots();
         later(() => face(p.id, 'nervous'), 1400);
       } else {
-        run.badTutol++; run.kape = Math.max(0, run.kape - 1); refreshKape(); SFX.bad();
+        run.badTutol++; useKape(); refreshKape(); SFX.bad();
         face(p.id, 'smug'); speak(p.name, st.lie ? 'Ano\'ng kinalaman niyan sa sinabi ko? Wala, Inspector.' : 'Totoo ang sinabi ko. Wala kang makikitang butas diyan.');
         picked = null; renderCards(); renderSlots();
         outOfKape();
@@ -843,7 +905,7 @@
       const sol = c.solution, p = suspectOf(c, run.suspect);
       const ok1 = sol.slot1.includes(run.slot1), ok2 = sol.slot2.includes(run.slot2);
       if (run.suspect === sol.culprit && ok1 && ok2) { SFX.slam(); arrest(c); return; }
-      run.wrong++; run.kape = Math.max(0, run.kape - 1); SFX.bad(); refreshKape();
+      run.wrong++; useKape(); SFX.bad(); refreshKape(); persistRun();
       $('.hotseat', s).classList.remove('shake'); void $('.hotseat', s).offsetWidth; $('.hotseat', s).classList.add('shake');
       if (run.suspect !== sol.culprit) { face(p.id, 'angry'); speak(p.name, p.deny || 'Hindi ako \'yan!'); }
       else {
@@ -892,6 +954,7 @@
     const metaClue = c.clues.find((cl) => cl.id === c.metaId);
     const newMeta = !save.metas.includes(c.metaId);
     if (newMeta) save.metas.push(c.metaId);
+    save.run = null;
     persist();
     const secs = Math.round((Date.now() - run.started) / 1000);
     const s = show(`<div class="screen result woodbg">
@@ -947,7 +1010,9 @@
         : `<div class="pin-card unk" style="left:${x}px;top:${y}px;width:260px;height:250px;transform:rotate(${r}deg)"><div class="ph">?</div><div class="cp">${m.from} — hindi pa lutas</div></div>`;
     });
     const centerCard = `<div class="pin-card" style="left:${center[0]}px;top:${center[1]}px;width:240px;height:260px;transform:rotate(2deg)"><div class="ph" style="background:#cdbf9c">${charSVG('tatay', 'neutral')}</div><div class="cp">SPO4 Ernesto Reyes</div></div>`;
-    const sideCard = ch.n === 2
+    const sideCard = ch.n === 3
+      ? `<div class="pin-card" style="left:930px;top:420px;width:220px;height:230px;transform:rotate(-4deg)"><div class="ph" style="background:${done ? '#cdbf9c' : '#111'}">${done ? charSVG('medina', 'sad') : charSVG('anino')}</div><div class="cp">${done ? 'KONS. ARTURO MEDINA' : 'ANG ANINO'}</div></div>`
+      : ch.n === 2
       ? `<div class="pin-card" style="left:930px;top:420px;width:220px;height:230px;transform:rotate(-4deg)"><div class="ph" style="background:${done ? '#cdbf9c' : '#111'}">${done ? charSVG('dizon', 'smug') : charSVG('anino')}</div><div class="cp">${done ? 'KAPT. RODEL DIZON' : 'ANG KASABWAT?'}</div></div>`
       : `<div class="pin-card" style="left:930px;top:420px;width:220px;height:230px;transform:rotate(-4deg)"><div class="ph" style="background:#111">${charSVG('anino')}</div><div class="cp">ANG ANINO</div></div>`;
     const yarnPts = [[240, 275], [1010, 255], [650, 525]];
@@ -964,19 +1029,274 @@
         ${done ? `<div class="cork-note" style="left:60px;top:500px;width:330px;transform:rotate(-3deg)">${esc(ch.note)}<br><b>— ITUTULOY</b></div>` : ''}
         ${!all ? '<div class="cork-note" style="left:40px;top:470px;width:300px;transform:rotate(-3deg)">Lutasin ang mga kaso para makakuha ng palatandaan ni Ang Anino.</div>' : ''}
       </div>
-      ${all && !done ? `<div class="cork-q" style="z-index:5"><h3>${esc(ch.question)}</h3><div class="opts">${ch.options.map((o, i) => `<button class="btn small" data-a="${i}">${esc(o)}</button>`).join('')}</div></div>` : ''}
+      ${all && done && ch.boss ? '<button class="btn gold" id="credits" style="position:absolute;right:30px;bottom:24px;z-index:6">CREDITS ▶</button>' : ''}
+    ${all && !done ? `<div class="cork-q" style="z-index:5"><h3>${esc(ch.question)}</h3><div class="opts">${ch.options.map((o, i) => `<button class="btn small" data-a="${i}">${esc(o)}</button>`).join('')}</div></div>` : ''}
     </div>`);
     tap($('#tb-back', s), () => desk());
+    if ($('#credits', s)) tap($('#credits', s), () => credits());
     $$('[data-ch]', s).forEach((b) => tap(b, () => { SFX.flip(); corkboard(+b.dataset.ch); }));
     $$('[data-a]', s).forEach((b) => tap(b, () => {
       if (+b.dataset.a === ch.answer) {
         SFX.win();
+        if (ch.boss) { komiks(ch.finale, () => bossFight(ch)); return; }
         komiks(ch.finale, () => { save.chapterDone[ch.n] = true; save.pesos += ch.reward; persist(); award('kab' + ch.n); corkboard(ch.n); });
       } else { SFX.bad(); b.disabled = true; toast(ch.wrong); }
     }));
   }
 
+  /* =========================================================
+     ANG HULING INTEROGASYON (boss)
+     ========================================================= */
+  function bossFight(ch) {
+    SFX.music('room');
+    const b = BOSS, broken = new Set();
+    let kape = 5, wrongs = 0, sel = null, picked = null;
+    const items = METAS.filter((m) => save.metas.includes(m.id) || DEV.on).map((m) => { const c = caseById(m.caseId), cl = c.clues.find((x) => x.id === m.id); return { id: m.id, name: cl.name, info: cl.info, thumb: clueThumb(c, cl), from: m.from }; });
+    const s = show(`<div class="screen room boss">
+      <div class="bricks"></div><div class="glow" style="background:radial-gradient(ellipse at 50% 25%, rgba(255,120,120,.32), rgba(255,120,120,0) 65%)"></div>
+      <div class="topbar"><div class="title-txt">ANG HULING INTEROGASYON <small>Basagin ang lahat ng kasinungalingan ni Ang Anino</small></div><div id="bk">${kapeHTML(kape)}</div></div>
+      <div class="hotseat"><div class="chair"></div><div class="sus" id="sus">${charSVG(b.char, 'smug')}</div><div class="table"></div></div>
+      <div class="lamp"><div class="cord"></div><div class="shade"></div><div class="bulb"></div></div>
+      <div class="speech" id="speech"><span class="who">${esc(b.name)}</span>${esc(b.greet)}</div>
+      <div class="accuse boss-st"><h3>MGA PAHAYAG</h3><div class="sub">* Pumili ng pahayag, saka ng palatandaan sa ibaba.</div><div class="ph-list" id="bst"></div><button class="btn tutol" id="tutol" style="margin-top:auto;font-size:34px">TUTOL!</button></div>
+      <div class="suspects boss-prog"><h3>PROGRESO</h3><div class="sub">* 4 na kasinungalingan</div><div class="meter" id="meter"></div><div class="mateo-pp">${charSVG('mateo', 'determined')}</div></div>
+      <div class="evtray"><div class="th">MGA PALATANDAAN NI ANG ANINO <span>Lahat ng naipon mo sa tatlong kabanata</span></div><div class="evscroll" id="evs"></div></div>
+    </div>`);
+    function speak(who, t) { const sp = $('#speech', s); sp.innerHTML = `<span class="who">${esc(who)}</span>${esc(t)}`; sp.style.animation = 'none'; void sp.offsetWidth; sp.style.animation = 'pop .25s'; }
+    function render() {
+      $('#bst', s).innerHTML = b.statements.map((x, i) => `<button class="stmt ${sel === i ? 'sel' : ''} ${broken.has(i) ? 'broken' : ''}" data-st="${i}">“${esc(x.t)}”${broken.has(i) ? '<span class="basag">BASAG!</span>' : ''}</button>`).join('');
+      $('#meter', s).innerHTML = b.statements.map((x, i) => `<i class="${broken.has(i) ? 'on' : ''}"></i>`).join('') + `<b>${broken.size}/4</b>`;
+      $('#evs', s).innerHTML = items.map((it) => `<div class="ev-card meta ${picked === it.id ? 'picked' : ''} ${DEV.on && DEV.answers && sel !== null && b.statements[sel].ev.includes(it.id) ? 'dev-ok' : ''}" data-id="${it.id}"><div class="ti">${it.thumb}</div><div class="nm">${esc(it.name)}</div></div>`).join('');
+      $$('[data-st]', s).forEach((x) => tap(x, () => { SFX.tap(); sel = +x.dataset.st; render(); speak(b.name, b.statements[sel].t); }));
+      $$('.ev-card', s).forEach((x) => tap(x, () => { SFX.tap(); picked = picked === x.dataset.id ? null : x.dataset.id; render(); }));
+      $('#tutol', s).classList.toggle('ready', sel !== null && !!picked);
+    }
+    render();
+    tap($('#tutol', s), () => {
+      if (sel === null) { SFX.bad(); toast('Pumili muna ng pahayag.'); return; }
+      if (!picked) { SFX.bad(); toast('Pumili ng palatandaan sa ibaba.'); return; }
+      const st = b.statements[sel];
+      const burst = el('<div class="tutol-burst">TUTOL!</div>'); s.appendChild(burst); setTimeout(() => burst.remove(), 1000);
+      SFX.objection();
+      if (st.ev.includes(picked) && !broken.has(sel)) {
+        broken.add(sel); $('#sus', s).innerHTML = charSVG(b.char, 'shock'); speak(b.name, st.say);
+        $('.hotseat', s).classList.remove('shake'); void $('.hotseat', s).offsetWidth; $('.hotseat', s).classList.add('shake');
+        sel = null; picked = null; render();
+        later(() => { $('#sus', s).innerHTML = charSVG(b.char, broken.size >= 3 ? 'nervous' : 'angry'); }, 1500);
+        if (broken.size === b.statements.length) later(win, 2200);
+      } else {
+        wrongs++; if (!(DEV.on && DEV.infKape)) kape--; SFX.bad();
+        $('#bk', s).innerHTML = kapeHTML(kape);
+        $('#sus', s).innerHTML = charSVG(b.char, 'smug'); speak(b.name, b.wrong[wrongs % b.wrong.length]);
+        picked = null; render();
+        if (kape <= 0) later(() => {
+          const o = el(`<div class="overlay"><div class="card"><h2>NAKALUSOT SI ANG ANINO...</h2><p>Ubos na ang kape mo. Pag-aralan ulit ang mga palatandaan, at harapin siya muli.</p><button class="btn primary" id="r">SUBUKAN ULIT</button></div></div>`);
+          s.appendChild(o); tap($('#r', o), () => bossFight(ch));
+        }, 1400);
+      }
+    });
+    function win() {
+      SFX.slam();
+      save.chapterDone[ch.n] = true; save.pesos += ch.reward; save.bossWon = true; persist();
+      award('kab' + ch.n); if (wrongs === 0) award('anino');
+      komiks(ENDING, () => credits());
+    }
+  }
+
+  function credits() {
+    SFX.music('win'); SFX.rain(false);
+    const stars = CASES.reduce((a, c) => a + (save.solved[c.id] || 0), 0);
+    const s = show(`<div class="screen credits">
+      <div class="rain" style="inset:0;opacity:.25"></div>
+      <div class="roll">${CREDITS.map(([a, b]) => `<div class="cr"><b>${esc(a)}</b>${b ? `<span>${esc(b)}</span>` : ''}</div>`).join('')}
+        <div class="cr"><b>IYONG REKORD</b><span>Mga bituin: ${stars}/${CASES.length * 3} · Medalya: ${save.medals.length}/${MEDALS.length} · Pera: ₱${save.pesos}</span></div>
+      </div>
+      <button class="btn primary" id="go" style="position:absolute;right:30px;bottom:24px">BUMALIK SA OPISINA ▶</button>
+    </div>`);
+    tap($('#go', s), () => desk());
+  }
+
+  /* =========================================================
+     SAVE / LOAD
+     ========================================================= */
+  const SLOTKEY = 'kaso-dilim-slots-v1';
+  function getSlots() { try { const v = JSON.parse(localStorage.getItem(SLOTKEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  function setSlots(v) { try { localStorage.setItem(SLOTKEY, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  function summary(d) {
+    const n = Object.keys(d.solved || {}).length, chs = Object.keys(d.chapterDone || {}).length;
+    return `${n}/${CASES.length} kaso · ${chs ? 'Tapos: Kab. ' + Object.keys(d.chapterDone).join(', ') : 'Kabanata 1'} · ₱${d.pesos || 0}${d.run ? ' · may kasong naka-pause' : ''}`;
+  }
+  const fmtTime = (t) => { try { return new Date(t).toLocaleString('fil-PH', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return new Date(t).toLocaleString(); } };
+  function encodeSave() { const j = JSON.stringify(save); let sum = 0; for (let i = 0; i < j.length; i++) sum = (sum + j.charCodeAt(i) * (i + 1)) % 9973; return 'KASO1-' + btoa(unescape(encodeURIComponent(j))) + '-' + sum; }
+  function decodeSave(txt) {
+    txt = String(txt || '').trim();
+    let data;
+    if (txt.startsWith('{')) data = JSON.parse(txt);
+    else {
+      const m = txt.replace(/\s+/g, '').match(/^KASO1-([A-Za-z0-9+/=]+)-(\d+)$/);
+      if (!m) throw new Error('format');
+      const j = decodeURIComponent(escape(atob(m[1])));
+      let sum = 0; for (let i = 0; i < j.length; i++) sum = (sum + j.charCodeAt(i) * (i + 1)) % 9973;
+      if (sum !== +m[2]) throw new Error('checksum');
+      data = JSON.parse(j);
+    }
+    if (!data || typeof data !== 'object' || typeof data.solved !== 'object' || !Array.isArray(data.metas)) throw new Error('data');
+    return data;
+  }
+  function applyLoaded(data, msg) {
+    save = Object.assign(DEF(), data); persist();
+    SFX.setEnabled(save.sound); SFX.setMusicVol(save.musicVol); SFX.setSfxVol(save.sfxVol);
+    run = null; SFX.good(); desk(); toast(msg || 'Na-load ang save!');
+  }
+  function saveMenu() {
+    if (run) persistRun();
+    const slots = getSlots();
+    const slotHTML = [0, 1, 2].map((i) => {
+      const sl = slots[i];
+      return `<div class="slotrow"><div class="sn">SLOT ${i + 1}</div><div class="si">${sl ? `<b>${esc(summary(sl.data))}</b><small>${esc(fmtTime(sl.time))}</small>` : '<i>Walang laman</i>'}</div>
+        <button class="btn small gold" data-sv="${i}">I-SAVE DITO</button><button class="btn small primary" data-ld="${i}" ${sl ? '' : 'disabled'}>I-LOAD</button><button class="btn small dark" data-dl="${i}" ${sl ? '' : 'disabled'}>✕</button></div>`;
+    }).join('');
+    const o = modal('SAVE / LOAD', `<div class="savemenu">
+      <p class="note">✔ <b>Auto-save:</b> awtomatikong naka-save ang progreso mo sa device na ito — pati ang kasong nasa gitna. Huling save: ${save.savedAt ? esc(fmtTime(save.savedAt)) : '—'}.<br>Ngayon: ${esc(summary(save))}</p>
+      <h3>MGA SAVE SLOT</h3>${slotHTML}
+      <h3>ILIPAT SA IBANG DEVICE</h3>
+      <p class="note">Kopyahin ang <b>save code</b> at i-paste sa laro sa ibang phone o computer. O i-download/i-upload bilang file.</p>
+      <div class="coderow"><textarea id="code-out" readonly rows="3" aria-label="Save code"></textarea><div class="col"><button class="btn small gold" id="mk">GUMAWA NG CODE</button><button class="btn small dark" id="cp">KOPYAHIN</button><button class="btn small dark" id="dlf">I-DOWNLOAD</button></div></div>
+      <div class="coderow"><textarea id="code-in" rows="3" placeholder="I-paste dito ang save code (KASO1-...)" aria-label="I-paste ang save code"></textarea><div class="col"><button class="btn small primary" id="imp">I-LOAD ANG CODE</button><label class="btn small dark upl">I-UPLOAD FILE<input type="file" id="upf" accept=".txt,.json,.kaso" hidden></label></div></div>
+    </div>`, 'wide');
+    $$('[data-sv]', o).forEach((b) => tap(b, () => {
+      const i = +b.dataset.sv, sl = getSlots();
+      const doIt = () => { sl[i] = { time: Date.now(), data: JSON.parse(JSON.stringify(save)) }; if (setSlots(sl)) { SFX.stamp(); toast(`Na-save sa Slot ${i + 1}.`); o.remove(); saveMenu(); } else toast('Hindi ma-save — puno o naka-block ang storage. Gamitin ang save code.'); };
+      if (sl[i]) confirmBox(`Palitan ang laman ng Slot ${i + 1}?`, doIt); else doIt();
+    }));
+    $$('[data-ld]', o).forEach((b) => tap(b, () => { const i = +b.dataset.ld, sl = getSlots()[i]; if (!sl) return; confirmBox(`I-load ang Slot ${i + 1}? Papalitan ang kasalukuyang progreso.`, () => { o.remove(); applyLoaded(sl.data, `Na-load ang Slot ${i + 1}.`); }); }));
+    $$('[data-dl]', o).forEach((b) => tap(b, () => { const i = +b.dataset.dl; confirmBox(`Burahin ang Slot ${i + 1}?`, () => { const sl = getSlots(); sl[i] = null; setSlots(sl); o.remove(); saveMenu(); }); }));
+    const out = $('#code-out', o);
+    tap($('#mk', o), () => { out.value = encodeSave(); out.select(); SFX.good(); });
+    tap($('#cp', o), () => {
+      if (!out.value) out.value = encodeSave();
+      out.select();
+      try { navigator.clipboard.writeText(out.value).then(() => toast('Nakopya ang save code!'), () => toast('Piliin at kopyahin ang code nang mano-mano.')); } catch (e) { toast('Piliin at kopyahin ang code nang mano-mano.'); }
+    });
+    tap($('#dlf', o), () => {
+      try {
+        const blob = new Blob([encodeSave()], { type: 'text/plain' }), a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'kaso-dilim-save.kaso'; document.body.appendChild(a); a.click(); a.remove();
+        toast('Kung walang nag-download, gamitin ang KOPYAHIN.');
+      } catch (e) { toast('Hindi ma-download dito. Gamitin ang KOPYAHIN.'); }
+    });
+    tap($('#imp', o), () => {
+      try { const d = decodeSave($('#code-in', o).value); confirmBox('I-load ang save code? Papalitan ang kasalukuyang progreso.', () => { o.remove(); applyLoaded(d, 'Na-load ang save code!'); }); }
+      catch (e) { SFX.bad(); toast('Hindi wasto ang save code. Siguraduhing kumpleto ang kinopya (nagsisimula sa KASO1-).'); }
+    });
+    $('#upf', o).addEventListener('change', (e) => {
+      const f = e.target.files && e.target.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => { try { const d = decodeSave(rd.result); o.remove(); applyLoaded(d, 'Na-load ang save file!'); } catch (err) { SFX.bad(); toast('Hindi wastong save file.'); } };
+      rd.readAsText(f);
+    });
+  }
+
+  /* =========================================================
+     DEVELOPER MODE
+     ========================================================= */
+  function devButton() {
+    let b = document.getElementById('devbtn');
+    if (!DEV.on) { if (b) b.remove(); return; }
+    if (!b) { b = document.createElement('button'); b.id = 'devbtn'; b.textContent = '🛠 DEV'; b.title = 'Developer panel'; document.body.appendChild(b); b.addEventListener('click', () => { SFX.init(); devPanel(); }); }
+  }
+  function devLogin() {
+    const o = el(`<div class="overlay"><form class="card" id="devf"><h2>DEVELOPER MODE 🔒</h2><p>Ilagay ang password.</p><input type="password" id="dev-pass" autocomplete="off" class="devpass" aria-label="Password"><p class="err" id="deverr" hidden>Maling password.</p><div class="row"><button class="btn primary" type="submit">PASOK</button><button class="btn dark" type="button" id="n">KANSELA</button></div></form></div>`);
+    stage.appendChild(o);
+    const inp = $('#dev-pass', o); setTimeout(() => inp.focus(), 50);
+    $('#devf', o).addEventListener('submit', (e) => {
+      e.preventDefault(); SFX.init();
+      if (passHash(inp.value.trim().toUpperCase()) === DEV_HASH) { DEV.on = true; persistDev(); devButton(); o.remove(); SFX.medal(); toast('Developer mode: BUKAS'); devPanel(); }
+      else { SFX.bad(); $('#deverr', o).hidden = false; inp.value = ''; const f = $('#devf', o); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); }
+    });
+    tap($('#n', o), () => o.remove());
+  }
+  function devGo(c, ph) {
+    newRun(c);
+    const all = () => { c.clues.forEach((cl) => run.found.add(cl.id)); run.sceneDone = true; };
+    const chk = () => { c.suspects.forEach((sp) => { run.checked.add(sp.id); (sp.check.unlock || []).forEach((u) => run.unlocked.add(u)); }); };
+    const ans = () => { run.suspect = c.solution.culprit; run.slot1 = c.solution.slot1[0]; run.slot2 = c.solution.slot2[0]; };
+    if (ph === 'intro') return komiks(c.intro, () => outline(c));
+    if (ph === 'outline') return outline(c);
+    if (ph === 'inv') return investigate(c);
+    all(); if (ph === 'files') return files(c);
+    chk(); if (ph === 'room') return interrogate(c);
+    ans(); if (ph === 'arrest') return arrest(c);
+    return result(c);
+  }
+  function devPanel() {
+    if (!DEV.on) { devLogin(); return; }
+    const caseOpts = CASES.map((c) => `<option value="${c.id}" ${run && run.c === c ? 'selected' : ''}>#${c.num} · ${esc(c.title)} (Kab. ${chapterOf(c)})</option>`).join('');
+    const ck = (id, k, label) => `<label class="devck"><input type="checkbox" id="${id}" data-k="${k}" ${DEV[k] ? 'checked' : ''}> ${label}</label>`;
+    const o = modal('🛠 DEVELOPER MODE', `<div class="devp">
+      <h3>PUMUNTA SA KASO</h3>
+      <div class="devrow"><select id="dev-case" aria-label="Kaso">${caseOpts}</select></div>
+      <div class="devrow">${[['intro', 'KOMIKS'], ['outline', 'BUOD'], ['inv', 'EKSENA'], ['files', 'TALAAN'], ['room', 'INTEROGASYON'], ['arrest', 'ARESTO'], ['result', 'RESULTA']].map(([k, l]) => `<button class="btn small gold" data-ph="${k}">${l}</button>`).join('')}</div>
+      <h3>MGA CHEAT</h3>
+      <div class="devrow">${ck('dev-time', 'infTime', 'Hindi umaandar ang oras')}${ck('dev-kape', 'infKape', 'Walang ubos na kape')}${ck('dev-ans', 'answers', 'Ipakita ang mga sagot')}${ck('dev-unl', 'unlockAll', 'Bukas lahat ng kaso')}</div>
+      <h3>KASALUKUYANG KASO ${run ? '· #' + run.c.num + ' (' + esc(run.phase || '') + ')' : '· wala'}</h3>
+      <div class="devrow"><button class="btn small dark" data-act="found" ${run ? '' : 'disabled'}>HANAPIN LAHAT NG EBIDENSYA</button><button class="btn small dark" data-act="check" ${run ? '' : 'disabled'}>SURIIN LAHAT NG ALIBI</button><button class="btn small dark" data-act="lies" ${run ? '' : 'disabled'}>BASAGIN LAHAT NG KASINUNGALINGAN</button><button class="btn small dark" data-act="answer" ${run ? '' : 'disabled'}>ILAGAY ANG TAMANG SAGOT</button></div>
+      <h3>PROGRESO</h3>
+      <div class="devrow"><button class="btn small dark" data-pg="money">+₱1000</button><button class="btn small dark" data-pg="thermos">+3 THERMOS</button><button class="btn small dark" data-pg="solveall">LUTASIN LAHAT (3★)</button><button class="btn small dark" data-pg="medals">LAHAT NG MEDALYA</button><button class="btn small dark" data-pg="ch1">TAPOS KAB. 1</button><button class="btn small dark" data-pg="ch2">TAPOS KAB. 2</button><button class="btn small dark" data-pg="ch3">TAPOS KAB. 3</button><button class="btn small dark" data-pg="chreset">RESET MGA KABANATA</button><button class="btn small dark" data-pg="tut">RESET TUTORIAL</button><button class="btn small primary" data-pg="wipe">BURAHIN LAHAT</button></div>
+      <h3>MGA EKSENA</h3>
+      <div class="devrow"><button class="btn small dark" data-sc="title">TITLE</button><button class="btn small dark" data-sc="desk">OPISINA</button><button class="btn small dark" data-sc="prologue">PROLOGUE</button><button class="btn small dark" data-sc="f1">FINALE 1</button><button class="btn small dark" data-sc="f2">FINALE 2</button><button class="btn small dark" data-sc="f3">FINALE 3</button><button class="btn small dark" data-sc="boss">HULING INTEROGASYON</button><button class="btn small dark" data-sc="ending">ENDING</button><button class="btn small dark" data-sc="credits">CREDITS</button><button class="btn small dark" data-sc="c1">CORK 1</button><button class="btn small dark" data-sc="c2">CORK 2</button><button class="btn small dark" data-sc="c3">CORK 3</button></div>
+      <div class="devrow" style="margin-top:10px"><button class="btn small primary" id="dev-lock">I-LOCK ANG DEVELOPER MODE</button></div>
+    </div>`, 'wide dev');
+    const close = () => o.remove();
+    $$('[data-ph]', o).forEach((b) => tap(b, () => { close(); devGo(caseById($('#dev-case', o).value), b.dataset.ph); }));
+    $$('.devck input', o).forEach((cb) => cb.addEventListener('change', () => { DEV[cb.dataset.k] = cb.checked; persistDev(); toast(cb.parentElement.textContent.trim() + ': ' + (cb.checked ? 'BUKAS' : 'SARADO')); }));
+    $$('[data-act]', o).forEach((b) => tap(b, () => {
+      if (!run) return;
+      const c = run.c, a = b.dataset.act;
+      if (a === 'found') { c.clues.forEach((cl) => run.found.add(cl.id)); run.sceneDone = true; }
+      if (a === 'check') c.suspects.forEach((sp) => { run.checked.add(sp.id); (sp.check.unlock || []).forEach((u) => run.unlocked.add(u)); });
+      if (a === 'lies') c.suspects.forEach((sp) => (sp.statements || []).forEach((st, i) => { if (st.lie) { run.broken.add(sp.id + ':' + i); (st.lie.unlock || []).forEach((u) => run.unlocked.add(u)); } }));
+      if (a === 'answer') { c.clues.forEach((cl) => run.found.add(cl.id)); c.suspects.forEach((sp) => { run.checked.add(sp.id); (sp.check.unlock || []).forEach((u) => run.unlocked.add(u)); }); run.suspect = c.solution.culprit; run.slot1 = c.solution.slot1[0]; run.slot2 = c.solution.slot2[0]; }
+      persistRun(); close();
+      const ph = run.phase === 'intro' ? 'outline' : run.phase;
+      const target = a === 'answer' ? 'room' : (a === 'found' && ph === 'inv' ? 'files' : ph);
+      ({ outline, inv: investigate, files, room: interrogate }[target] || outline)(c);
+      toast('DEV: tapos.');
+    }));
+    $$('[data-pg]', o).forEach((b) => tap(b, () => {
+      const k = b.dataset.pg;
+      if (k === 'money') save.pesos += 1000;
+      if (k === 'thermos') save.thermos += 3;
+      if (k === 'solveall') { CASES.forEach((c) => { save.solved[c.id] = 3; if (!save.metas.includes(c.metaId)) save.metas.push(c.metaId); }); save.seenPrologue = true; }
+      if (k === 'medals') save.medals = MEDALS.map((m) => m.id);
+      if (/^ch\d$/.test(k)) { const n = +k[2]; for (let i = 1; i <= n; i++) save.chapterDone[i] = true; CASES.filter((c) => chapterOf(c) <= n).forEach((c) => { if (!save.solved[c.id]) save.solved[c.id] = 3; if (!save.metas.includes(c.metaId)) save.metas.push(c.metaId); }); save.seenPrologue = true; }
+      if (k === 'chreset') save.chapterDone = {};
+      if (k === 'tut') save.tut = {};
+      if (k === 'wipe') { confirmBox('Burahin ang lahat ng progreso?', () => { save = DEF(); persist(); close(); title(); }); return; }
+      persist(); SFX.good(); toast('DEV: na-update ang progreso.');
+      close(); desk();
+    }));
+    $$('[data-sc]', o).forEach((b) => tap(b, () => {
+      const k = b.dataset.sc; close();
+      if (k === 'title') return title();
+      if (k === 'desk') return desk();
+      if (k === 'prologue') return komiks(PROLOGUE, () => desk());
+      if (k[0] === 'f') return komiks(CHAPTERS[+k[1] - 1].finale, () => desk());
+      if (k === 'boss') return bossFight(CHAPTERS[2]);
+      if (k === 'ending') return komiks(ENDING, () => credits());
+      if (k === 'credits') return credits();
+      if (k[0] === 'c') return corkboard(+k[1]);
+    }));
+    tap($('#dev-lock', o), () => { DEV = { on: false, infTime: false, infKape: false, answers: false, unlockAll: false }; persistDev(); devButton(); close(); toast('Naka-lock ang developer mode.'); });
+  }
+
+  /* ---------------- OFFLINE (installable app) ---------------- */
+  try {
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && !/claude|anthropic/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => {});
+  } catch (e) { /* ignore */ }
+
   /* ---------------- BOOT ---------------- */
-  window.KASO_DEBUG = { get run() { return run; }, get save() { return save; }, startCase, desk, investigate, files, interrogate, corkboard, result, outline, award };
+  window.KASO_DEBUG = { get run() { return run; }, get save() { return save; }, startCase, desk, investigate, files, interrogate, corkboard, result, outline, award, bossFight, credits, saveMenu, devPanel, devLogin, encodeSave, decodeSave, resumeRun };
+  devButton();
   title();
 })();
