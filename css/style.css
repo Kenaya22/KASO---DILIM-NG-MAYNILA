@@ -348,3 +348,57 @@ body.portrait #rotate { display: flex; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* =========================================================
+   v2 ADDITIONS
+   ========================================================= */
+.toast { position: absolute; left: 50%; top: 80px; transform: translateX(-50%); z-index: 70; background: var(--paper); color: var(--ink); border: 3px solid var(--ink); padding: 10px 18px; font-family: var(--f-type); font-size: 17px; box-shadow: 5px 5px 0 rgba(0,0,0,.5); max-width: 760px; text-align: center; animation: pop .2s; }
+.medal-toast { position: absolute; right: 24px; top: 76px; z-index: 90; display: flex; gap: 12px; align-items: center; background: #1a1512; color: var(--paper); border: 3px solid var(--brass); padding: 10px 18px 10px 10px; box-shadow: 6px 6px 0 rgba(0,0,0,.5); animation: medalin 3.6s forwards; }
+.medal-toast .mt-ico svg { width: 52px; height: 52px; display: block; }
+.medal-toast small { display: block; font-family: var(--f-type); color: var(--brass); font-size: 13px; }
+.medal-toast b { font-family: var(--f-display); font-weight: 400; font-size: 24px; letter-spacing: .5px; }
+@keyframes medalin { 0% { transform: translateX(120%); } 10%, 85% { transform: translateX(0); } 100% { transform: translateX(120%); } }
+.medals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.medal { display: flex; gap: 12px; align-items: center; background: var(--paper); border: 2px solid var(--manila-dk); padding: 8px 10px; font-size: 15px; opacity: .55; }
+.medal.got { opacity: 1; border-color: var(--ink); }
+.medal .mi { width: 48px; height: 48px; flex: 0 0 auto; display: grid; place-items: center; font-family: var(--f-display); font-size: 28px; color: var(--sepia); background: var(--paper-dk); border-radius: 50%; }
+.medal.got .mi { background: none; }
+.medal .mi svg { width: 48px; height: 48px; }
+.medal b { font-family: var(--f-display); font-weight: 400; font-size: 19px; letter-spacing: .5px; }
+.settings { display: grid; grid-template-columns: 200px 1fr; gap: 16px 18px; align-items: center; font-family: var(--f-display); font-size: 20px; letter-spacing: .5px; }
+.settings .btn { justify-self: start; }
+.settings input[type=range] { width: 100%; accent-color: var(--blood); height: 28px; }
+.ch-h { font-family: var(--f-display); font-weight: 400; font-size: 24px; letter-spacing: 1px; margin: 4px 0 10px; border-bottom: 2px solid var(--ink); padding-bottom: 4px; }
+.ch-h span { color: var(--ok); font-size: 16px; }
+.ch-h ~ .ch-h { margin-top: 22px; }
+.cork-tabs { display: flex; gap: 10px; }
+
+/* coach / tutorial */
+.coach { position: absolute; inset: 0; z-index: 95; cursor: pointer; }
+.coach-hole { position: absolute; border: 4px solid var(--brass); border-radius: 10px; box-shadow: 0 0 0 4000px rgba(5,3,2,.7); pointer-events: none; transition: all .3s; }
+.coach-box { position: absolute; width: 420px; background: var(--paper); color: var(--ink); border: 4px solid var(--ink); border-radius: 16px; padding: 12px 16px; box-shadow: 8px 8px 0 rgba(0,0,0,.5); display: flex; flex-direction: column; gap: 8px; transition: all .3s; }
+.coach-box .who { font-family: var(--f-ui); font-weight: 700; font-size: 13px; letter-spacing: 1px; color: var(--blood); }
+.coach-box p { margin: 0; font-family: var(--f-talk); font-size: 21px; line-height: 1.25; }
+.coach-box .btn { align-self: flex-end; }
+.coach-skip { position: absolute; left: 14px; bottom: 14px; background: none; border: 0; font-family: var(--f-type); font-size: 13px; color: var(--sepia); text-decoration: underline; padding: 0; }
+
+/* zoom */
+.zoomtag { position: absolute; right: 8px; top: 8px; background: var(--brass); color: var(--ink); font-family: var(--f-display); font-size: 18px; padding: 0 10px; border: 2px solid var(--ink); pointer-events: none; }
+.inv .hintbtn { padding: 2px 10px 2px 4px; font-size: 16px; }
+#zoom { padding: 2px 12px; }
+
+/* statements / TUTOL */
+.pahayag { position: absolute; left: 386px; top: 366px; width: 508px; height: 144px; z-index: 8; background: rgba(246,236,210,.97); color: var(--ink); border: 3px solid var(--ink); padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; box-shadow: 5px 5px 0 rgba(0,0,0,.45); }
+.ph-h { font-family: var(--f-display); font-size: 15px; letter-spacing: 1px; }
+.ph-h span { font-family: var(--f-type); font-size: 12px; color: var(--sepia); letter-spacing: 0; margin-left: 6px; }
+.ph-row { display: flex; gap: 8px; flex: 1; min-height: 0; }
+.ph-list { flex: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; min-width: 0; }
+.stmt { text-align: left; background: #fff; border: 2px solid var(--paper-dk); padding: 4px 8px; font-family: var(--f-talk); font-size: 16px; line-height: 1.15; color: var(--ink); position: relative; }
+.stmt.sel { border-color: var(--ink); background: #fff3cf; }
+.stmt.broken { color: #7a6a5a; text-decoration: line-through; text-decoration-color: var(--blood); }
+.stmt .basag { position: absolute; right: 6px; top: 50%; transform: translateY(-50%) rotate(-6deg); font-family: var(--f-display); font-size: 14px; color: #fff; background: var(--blood); padding: 0 6px; text-decoration: none; }
+.stmt.none { font-family: var(--f-type); font-size: 14px; color: var(--sepia); border: 0; background: none; }
+.tutol { background: #2a63c4; color: #fff; font-size: 26px; padding: 6px 14px; align-self: stretch; }
+.tutol.ready { animation: pulse 1s ease-in-out infinite; }
+.tutol-burst { position: absolute; left: 50%; top: 40%; transform: translate(-50%,-50%) rotate(-8deg); z-index: 50; font-family: var(--f-sfx); font-size: 150px; color: #fff; background: #2a63c4; border: 6px solid var(--ink); padding: 0 40px; letter-spacing: 6px; -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 6px 6px 0 var(--ink); pointer-events: none; animation: burst 1s forwards; }
+@keyframes burst { 0% { transform: translate(-50%,-50%) rotate(-8deg) scale(2.4); opacity: 0; } 15% { transform: translate(-50%,-50%) rotate(-8deg) scale(1); opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-50%) rotate(-8deg) scale(1.05); } }

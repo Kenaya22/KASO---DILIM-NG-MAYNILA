@@ -231,7 +231,7 @@
     }
   }
 
-  function figure(c, expr) {
+  function figure(c, expr, pose) {
     expr = expr || 'neutral';
     const sw = 0.9, sk = c.skin, hc = c.hairColor || '#1a1410';
     if (c.silhouette) {
@@ -245,6 +245,11 @@
     s += torso(c);
     s += `<path d="M-3.4,18 L-3.4,27 L3.4,27 L3.4,18Z" fill="${sk}" stroke="${K}" stroke-width="${sw}"/>`;
     s += collar(c);
+    if (pose === 'point') {
+      const sleeve = c.outfit === 'barong' ? '#ece2c6' : (c.outfit === 'sando' ? c.skin : (c.color || '#555'));
+      s += `<path d="M12,29 L31,18 L35,26 L17,44Z" fill="${sleeve}" stroke="${K}" stroke-width="${sw}"/>`;
+      s += `<ellipse cx="36" cy="21.5" rx="4.2" ry="3.6" fill="${c.skin}" stroke="${K}" stroke-width="${sw}"/><path d="M38.5,19.2 L46,16.6 L46.6,18.6 L39.4,21.6Z" fill="${c.skin}" stroke="${K}" stroke-width=".7"/>`;
+    }
     s += `<ellipse cx="-9" cy="12" rx="2.2" ry="3" fill="${sk}" stroke="${K}" stroke-width="${sw}"/><ellipse cx="9" cy="12" rx="2.2" ry="3" fill="${sk}" stroke="${K}" stroke-width="${sw}"/>`;
     if (c.earrings) s += `<circle cx="-9.4" cy="15.6" r="1" fill="#f0c94b" stroke="${K}" stroke-width=".3"/><circle cx="9.4" cy="15.6" r="1" fill="#f0c94b" stroke="${K}" stroke-width=".3"/>`;
     let head = 'M-9,8 Q-9,0 0,0 Q9,0 9,8 L9,13 Q8.5,21.5 0,22.5 Q-8.5,21.5 -9,13Z';
@@ -701,5 +706,5 @@
     tatay: { skin: '#b07a52', hair: 'short', hairColor: '#4a4040', outfit: 'police', color: '#2a3550', hat: 'police', mustache: true, mustacheColor: '#3a3333', wrinkles: true, jaw: 'square' }
   };
 
-  window.ART = { K, rng, uid, figure, portrait, lineup, sceneTulay, sceneLawton, sceneKTV, BG, desk, docIcon, sceneThumb, rain, neon };
+  window.ART = { K, rng, uid, figure, portrait, lineup, sceneTulay, sceneLawton, sceneKTV, BG, desk, docIcon, sceneThumb, rain, neon, skyline };
 })();

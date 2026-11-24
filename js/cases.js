@@ -264,7 +264,7 @@
     { bg: 'cork', cap: 'A-13. XIII. Kuwarto 13.', chars: [{ c: 'mateo', x: 380, y: 70, s: 6.4, e: 'determined', flip: true }], beats: [{ b: 'Hindi ito nagkataon lang.', who: 'Mateo', x: 4, y: 30, w: 38, tail: 'r' }] },
     { bg: 'office', chars: [{ c: 'mateo', x: 150, y: 64, s: 6.6, e: 'shock' }], beats: [{ b: 'Tay... Presinto 13. Doon ka naka-destino noong gabing iyon.', who: 'Mateo', x: 48, y: 18, w: 44, tail: 'l' }] },
     { bg: 'dark', chars: [{ c: 'anino', x: 260, y: 40, s: 8 }], beats: [{ sfx: 'KRIIING!', x: 4, y: 8, rot: -10, size: 44, color: '#ffd34a' }, { b: 'Magaling, Inspector Reyes. Mas magaling ka pa sa ama mo.', who: '???', x: 54, y: 10, w: 42, tail: 'l', dark: true }, { b: 'Pero ang dilim ng Maynila... hindi mo kayang liwanagan.', who: 'Ang Anino', x: 54, y: 52, w: 42, tail: 'l', dark: true }, { sfx: 'KLIK.', x: 10, y: 74, rot: 0, size: 40, color: '#ddd' }] },
-    { bg: 'street', chars: [{ c: 'mateo', x: 260, y: 40, s: 8, e: 'shout' }], beats: [{ b: 'Hahanapin kita, Anino. Kahit saang dilim ka magtago.', who: 'Mateo', x: 4, y: 8, w: 40, tail: 'r' }, { sfx: 'ITUTULOY...', x: 40, y: 78, rot: -3, size: 44, color: '#e1b866' }] }
+    { bg: 'street', chars: [{ c: 'mateo', x: 260, y: 40, s: 8, e: 'shout' }], beats: [{ b: 'Hahanapin kita, Anino. Kahit saang dilim ka magtago.', who: 'Mateo', x: 4, y: 8, w: 40, tail: 'r' }, { sfx: 'ITUTULOY SA KABANATA 2', x: 14, y: 80, rot: -3, size: 38, color: '#e1b866' }] }
   ];
 
   const METAS = [
@@ -278,6 +278,33 @@
     { id: 'radyo', name: 'Lumang Radyong AM', price: 200, desc: 'Para sa mga drama sa hatinggabi.' },
     { id: 'pusa', name: 'Pusang Tambay', price: 300, desc: 'Natutulog sa mesa mo. Hindi nagbabayad ng renta.' }
   ];
+
+  /* ---------------- PAHAYAG (interrogation statements) ---------------- */
+  const ST = (c, map) => c.suspects.forEach((sp) => { sp.statements = map[sp.id] || []; });
+  ST(c1, {
+    kanor: [{ t: 'Hindi ako lumapit sa kotse ni Donya Carmen buong gabi.', lie: { ev: ['boot', 'fabric'], say: '...Sige na! Lumapit ako. Tiningnan ko lang kung okay siya dahil sa lakas ng ulan!' } },
+      { t: 'Wala akong problema sa sanglaan.', lie: { ev: ['utang'], say: 'Oo, may utang ako. Pero lahat naman tayo may utang, \'di ba, Inspector?' } }],
+    lorna: [{ t: 'Hindi ako umalis ng stall hanggang 7:30.', lie: { ev: ['cctv1'], say: 'Ay... totoo, nagsara ako ng 6:48. Nahiya lang akong aminin na umuwi ako nang maaga.' } },
+      { t: 'Mabait si Donya Carmen sa lahat ng tindera dito.' }],
+    marco: [{ t: 'Nasa EDSA ako buong oras, naipit sa trapik.', lie: { ev: ['toll'], say: 'Fine — wala na ako sa EDSA. Nasa parking na ako sa Ortigas. Pero 12 kilometro pa rin \'yon!' } },
+      { t: 'Hindi ko kailangan ang pera ng tita ko.' }],
+    ben: [{ t: 'Hindi ako umalis sa tabi ng kotse kahit saglit.', lie: { ev: ['bakery'], say: 'Patawad, Sir... bumili ako ng pandesal. Labindalawang minuto lang. Hindi ko alam na...' } }]
+  });
+  ST(c2, {
+    totoy: [{ t: 'Wala akong napansing kakaiba sa terminal.', lie: { ev: ['sign'], say: 'Teka... oo nga! Pinalitan ni Mang Pido ang signboard ng "GARAHE." Akala ko pagod lang siya.' } }],
+    pido: [{ t: 'Nasa biyahe ako papuntang Divisoria mula 9:00.', lie: { ev: ['sign', 'logbook'], say: '...Hindi ako umalis. Nasa likod lang ako ng jeep, inaayos ang makina.' } },
+      { t: 'Bayad ako sa boundary ko.', lie: { ev: ['atraso'], say: 'Oo na! Atrasado ako. Pero hindi ako magnanakaw!' } }],
+    nena: [{ t: 'Hindi ko iniwan ang basket ko.', lie: { ev: ['basket'], say: 'Nabitawan ko po nang may sumigaw! Tumakbo ako sa kabilang kalye sa takot.' } }],
+    dado: [{ t: 'Kung gusto kong pabagsakin si Turing, gagawin ko sa negosyo, hindi sa ganyan.' }]
+  });
+  ST(c3, {
+    lyka: [{ t: 'Hindi ako umalis sa stage kahit isang kanta.' }],
+    junjun: [{ t: 'Hindi na ako bumalik sa VIP 13 pagkatapos ng 10:50.', lie: { ev: ['glass'], say: 'Ako po ang nagdala ng juice nang 10:55... pero malinis po \'yon! Wala pong pulbos noon!' } }],
+    sy: [{ t: 'Nasa opisina ako buong oras. Hindi ako bumaba.', lie: { ev: ['cufflink'], say: '...Bumaba ako saglit. Para... ibigay ang ulat kay Madam.' } },
+      { t: 'Malinis ang mga libro ng KTV.', lie: { ev: ['bank', 'ledger'], say: 'May... kaunting diperensya. Aayusin ko sana bago ang audit!' } }],
+    bong: [{ t: 'Hindi ako pumunta sa KTV ngayong gabi.', lie: { ev: ['parking'], say: 'Okay, nandoon ako — sa parking lang. Ayaw akong papasukin ng guard, kaya nag-away kami.' } }]
+  });
+  [c1, c2, c3].forEach((c) => { c.chapter = 1; });
 
   window.KASO = { CHARS, CASES: [c1, c2, c3], PROLOGUE, FINALE, METAS, SHOP };
 })();
