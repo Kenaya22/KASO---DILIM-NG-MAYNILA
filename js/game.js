@@ -6,6 +6,9 @@
   const { CHARS, CASES, PROLOGUE, METAS, SHOP, CHAPTERS, BOSS, ENDING, CREDITS } = window.KASO;
   const ART = window.ART, SFX = window.SFX;
   const stage = document.getElementById('stage');
+  const EN = window.KASO_LANG === 'en';
+  const L = (tl, en) => (EN ? en : tl);
+  function setLang(l) { try { localStorage.setItem('kaso-lang', l); } catch (e) { /* ignore */ } location.reload(); }
   let SCALE = 1;
   let cleanup = [];
 
@@ -28,26 +31,26 @@
 
   /* ---------------- MEDALS ---------------- */
   const MEDALS = [
-    { id: 'unang', name: 'Unang Kaso', desc: 'Lutasin ang unang kaso.' },
-    { id: 'perpekto', name: 'Perpektong Imbestigasyon', desc: 'Makakuha ng 3★ sa isang kaso.' },
-    { id: 'walanghint', name: 'Matang Lawin', desc: 'Kumpletuhin ang eksena nang walang Suriin.' },
-    { id: 'walangmali', name: 'Siguradong Tap', desc: 'Kumpletuhin ang eksena nang walang maling tap.' },
-    { id: 'mabilis', name: 'Kidlat', desc: 'Kumpletuhin ang eksena na may 60+ segundong natitira.' },
-    { id: 'tutol', name: 'TUTOL!', desc: 'Basagin ang unang kasinungalingan sa interogasyon.' },
-    { id: 'walanglusot', name: 'Walang Lusot', desc: 'Basagin ang lahat ng kasinungalingan ng salarin sa isang kaso.' },
-    { id: 'kab1', name: 'Kabanata 1', desc: 'Tapusin ang Kabanata 1.' },
-    { id: 'kab2', name: 'Kabanata 2', desc: 'Tapusin ang Kabanata 2.' },
-    { id: 'kab3', name: 'Kabanata 3', desc: 'Tapusin ang Kabanata 3 at mahuli si Ang Anino.' },
-    { id: 'anino', name: 'Huli Ka, Anino!', desc: 'Manalo sa Huling Interogasyon nang walang maling TUTOL.' },
-    { id: 'kolektor', name: 'Kolektor', desc: 'Bilhin ang lahat ng gamit sa mesa.' },
-    { id: 'alamat', name: 'Alamat ng Maynila', desc: 'Makakuha ng 3★ sa lahat ng kaso.' }
+    { id: 'unang', name: L('Unang Kaso', 'First Case'), desc: L('Lutasin ang unang kaso.', 'Solve your first case.') },
+    { id: 'perpekto', name: L('Perpektong Imbestigasyon', 'Perfect Investigation'), desc: L('Makakuha ng 3★ sa isang kaso.', 'Earn 3★ on a case.') },
+    { id: 'walanghint', name: L('Matang Lawin', 'Hawk Eye'), desc: L('Kumpletuhin ang eksena nang walang Suriin.', 'Clear a scene without using Inspect.') },
+    { id: 'walangmali', name: L('Siguradong Tap', 'Sure Shot'), desc: L('Kumpletuhin ang eksena nang walang maling tap.', 'Clear a scene without a wrong tap.') },
+    { id: 'mabilis', name: L('Kidlat', 'Lightning'), desc: L('Kumpletuhin ang eksena na may 60+ segundong natitira.', 'Clear a scene with 60+ seconds left.') },
+    { id: 'tutol', name: L('TUTOL!', 'OBJECTION!'), desc: L('Basagin ang unang kasinungalingan sa interogasyon.', 'Break your first lie in an interrogation.') },
+    { id: 'walanglusot', name: L('Walang Lusot', 'No Way Out'), desc: L('Basagin ang lahat ng kasinungalingan ng salarin sa isang kaso.', "Break every one of the culprit's lies in a case.") },
+    { id: 'kab1', name: L('Kabanata 1', 'Chapter 1'), desc: L('Tapusin ang Kabanata 1.', 'Finish Chapter 1.') },
+    { id: 'kab2', name: L('Kabanata 2', 'Chapter 2'), desc: L('Tapusin ang Kabanata 2.', 'Finish Chapter 2.') },
+    { id: 'kab3', name: L('Kabanata 3', 'Chapter 3'), desc: L('Tapusin ang Kabanata 3 at mahuli si Ang Anino.', 'Finish Chapter 3 and catch Ang Anino.') },
+    { id: 'anino', name: L('Huli Ka, Anino!', 'Gotcha, Anino!'), desc: L('Manalo sa Huling Interogasyon nang walang maling TUTOL.', 'Win the Final Interrogation without a wrong OBJECTION.') },
+    { id: 'kolektor', name: L('Kolektor', 'Collector'), desc: L('Bilhin ang lahat ng gamit sa mesa.', 'Buy every desk item.') },
+    { id: 'alamat', name: L('Alamat ng Maynila', 'Legend of Manila'), desc: L('Makakuha ng 3★ sa lahat ng kaso.', 'Earn 3★ on every case.') }
   ];
   function award(id) {
     if (save.medals.includes(id)) return;
     save.medals.push(id); persist();
     const m = MEDALS.find((x) => x.id === id);
     SFX.medal();
-    const t = el(`<div class="medal-toast"><span class="mt-ico">${MEDAL_SVG}</span><span><small>BAGONG MEDALYA</small><b>${esc(m.name)}</b></span></div>`);
+    const t = el(`<div class="medal-toast"><span class="mt-ico">${MEDAL_SVG}</span><span><small>${L('BAGONG MEDALYA', 'NEW MEDAL')}</small><b>${esc(m.name)}</b></span></div>`);
     stage.appendChild(t); setTimeout(() => t.remove(), 3600);
   }
   const MEDAL_SVG = '<svg viewBox="0 0 40 40"><path d="M12,2 L20,14 L28,2Z" fill="#b3262e"/><circle cx="20" cy="24" r="13" fill="#e1b866" stroke="#17110d" stroke-width="2.4"/><path d="M20,15 L22.6,21 L29,21.4 L24,25.4 L25.8,31.6 L20,28 L14.2,31.6 L16,25.4 L11,21.4 L17.4,21Z" fill="#fff6c8" stroke="#17110d" stroke-width="1.2"/></svg>';
@@ -75,11 +78,11 @@
   function clueThumb(c, clue) { const w = Math.max(60, clue.r * 2.8); return ART.sceneThumb(c.scene, clue.x, clue.y, w, !!clue.thumbBefore); }
   function evItems(c, run) {
     const items = [];
-    c.clues.forEach((cl) => { if (run.found.has(cl.id)) items.push({ id: cl.id, name: cl.name, info: cl.info, meta: !!cl.meta, thumb: clueThumb(c, cl), kind: 'Ebidensya sa eksena' }); });
-    Object.keys(c.records).forEach((rid) => { if (run.unlocked.has(rid)) { const r = c.records[rid]; items.push({ id: rid, name: r.name, info: r.info, thumb: ART.docIcon(r.icon), kind: 'Rekord', isNew: !run.seenRec.has(rid) }); } });
+    c.clues.forEach((cl) => { if (run.found.has(cl.id)) items.push({ id: cl.id, name: cl.name, info: cl.info, meta: !!cl.meta, thumb: clueThumb(c, cl), kind: L('Ebidensya sa eksena', 'Scene evidence') }); });
+    Object.keys(c.records).forEach((rid) => { if (run.unlocked.has(rid)) { const r = c.records[rid]; items.push({ id: rid, name: r.name, info: r.info, thumb: ART.docIcon(r.icon), kind: L('Rekord', 'Record'), isNew: !run.seenRec.has(rid) }); } });
     return items;
   }
-  function kapeHTML(n) { let s = ''; const max = Math.max(5, n); for (let i = 0; i < max; i++) s += KAPE_SVG(i >= n); return `<div class="kape" title="Kape (enerhiya)">${s}</div>`; }
+  function kapeHTML(n) { let s = ''; const max = Math.max(5, n); for (let i = 0; i < max; i++) s += KAPE_SVG(i >= n); return `<div class="kape" title="${L('Kape (enerhiya)', 'Coffee (energy)')}">${s}</div>`; }
   function soundIcon() { return save.sound ? '🔊' : '🔇'; }
   function chapterOf(c) { return c.chapter || 1; }
   function currentChapter() { let n = 1; CHAPTERS.forEach((ch) => { if (save.chapterDone[ch.n - 1] || ch.n === 1) n = ch.n; }); return n; }
@@ -111,13 +114,13 @@
   function coach(key, steps, done) {
     if (save.tut[key]) { if (done) done(); return; }
     let i = 0;
-    const o = el('<div class="coach"><div class="coach-hole"></div><div class="coach-box"><span class="who">PO2 JESSA · GABAY</span><p></p><button class="btn small primary">SIGE ▶</button><button class="coach-skip">Laktawan ang tutorial</button></div></div>');
+    const o = el(`<div class="coach"><div class="coach-hole"></div><div class="coach-box"><span class="who">${L('PO2 JESSA · GABAY', 'PO2 JESSA · GUIDE')}</span><p></p><button class="btn small primary">${L('SIGE ▶', 'NEXT ▶')}</button><button class="coach-skip">${L('Laktawan ang tutorial', 'Skip the tutorial')}</button></div></div>`);
     stage.appendChild(o);
     const hole = $('.coach-hole', o), box = $('.coach-box', o), p = $('p', box);
     function render() {
       const st = steps[i], target = st.sel ? $(st.sel) : null;
       p.textContent = st.text;
-      $('.btn', box).textContent = i === steps.length - 1 ? 'SIMULAN ▶' : 'SIGE ▶';
+      $('.btn', box).textContent = i === steps.length - 1 ? L('SIMULAN ▶', 'START ▶') : L('SIGE ▶', 'NEXT ▶');
       if (target) {
         const r = target.getBoundingClientRect(), sr = stage.getBoundingClientRect();
         const x = (r.left - sr.left) / SCALE - 8, y = (r.top - sr.top) / SCALE - 8, w = r.width / SCALE + 16, h = r.height / SCALE + 16;
@@ -145,13 +148,14 @@
     const s = show(`<div class="screen title">
       <div class="shade"></div>
       <div class="rain" style="inset:0;opacity:.35"></div>
-      <div class="tag">Isang misteryo ng Maynila.<br>Siyam na kaso. Isang anino.</div>
+      <div class="tag">${L('Isang misteryo ng Maynila.<br>Siyam na kaso. Isang anino.', 'A Manila mystery.<br>Nine cases. One shadow.')}</div>
       <div class="menu">
-        ${has ? '<button class="btn primary pulse" id="go">ITULOY ▶</button><button class="btn dark" id="new">BAGONG LARO</button>' : '<button class="btn primary pulse" id="go">SIMULAN ▶</button>'}
+        ${has ? `<button class="btn primary pulse" id="go">${L('ITULOY ▶', 'CONTINUE ▶')}</button><button class="btn dark" id="new">${L('BAGONG LARO', 'NEW GAME')}</button>` : `<button class="btn primary pulse" id="go">${L('SIMULAN ▶', 'START ▶')}</button>`}
         <button class="btn dark" id="load">SAVE / LOAD</button>
         <button class="btn dark" id="fs" title="Fullscreen">⛶</button>
       </div>
-      <div class="ver">Kabanata 1–3 · Landscape 16:9</div>
+      <div class="langsw"><button class="btn small ${EN ? 'dark' : 'gold'}" id="lang-tl">FILIPINO</button><button class="btn small ${EN ? 'gold' : 'dark'}" id="lang-en">ENGLISH</button></div>
+      <div class="ver">${L('Kabanata 1–3', 'Chapters 1–3')} · Landscape 16:9</div>
     </div>`);
     tap($('#go', s), () => {
       SFX.rain(true); SFX.music('noir');
@@ -160,22 +164,24 @@
       desk();
     });
     tap($('#load', s), () => { SFX.click(); saveMenu(); });
+    tap($('#lang-tl', s), () => { if (EN) setLang('tl'); });
+    tap($('#lang-en', s), () => { if (!EN) setLang('en'); });
     const nw = $('#new', s);
-    if (nw) tap(nw, () => confirmBox('Burahin ang lahat ng progreso at magsimula ulit?', () => { const keep = { sound: save.sound, musicVol: save.musicVol, sfxVol: save.sfxVol }; save = Object.assign(DEF(), keep); persist(); SFX.rain(true); komiks(PROLOGUE, () => { save.seenPrologue = true; persist(); startCase(CASES[0]); }); }));
+    if (nw) tap(nw, () => confirmBox(L('Burahin ang lahat ng progreso at magsimula ulit?', 'Erase all progress and start over?'), () => { const keep = { sound: save.sound, musicVol: save.musicVol, sfxVol: save.sfxVol }; save = Object.assign(DEF(), keep); persist(); SFX.rain(true); komiks(PROLOGUE, () => { save.seenPrologue = true; persist(); startCase(CASES[0]); }); }));
     tap($('#fs', s), toggleFullscreen);
   }
 
   function resumePrompt() {
     const r = save.run, c = caseById(r.cid);
-    const ph = { outline: 'Yugto 2 · Buod ng Kaso', inv: 'Yugto 3 · Paghahanap ng Ebidensya', files: 'Yugto 4 · Talaan', room: 'Yugto 5 · Interogasyon' }[r.phase] || 'Simula';
-    const o = el(`<div class="overlay"><div class="card"><h2>MAY NAKA-SAVE NA KASO</h2><p>Kaso #${c.num} · ${esc(c.title)}<br><b>${esc(ph)}</b></p><div class="row"><button class="btn primary" id="y">ITULOY ANG KASO ▶</button><button class="btn dark" id="n">PUMUNTA SA OPISINA</button></div></div></div>`);
+    const ph = { outline: L('Yugto 2 · Buod ng Kaso', 'Phase 2 · Case Outline'), inv: L('Yugto 3 · Paghahanap ng Ebidensya', 'Phase 3 · Evidence Search'), files: L('Yugto 4 · Talaan', 'Phase 4 · Case Files'), room: L('Yugto 5 · Interogasyon', 'Phase 5 · Interrogation') }[r.phase] || L('Simula', 'Start');
+    const o = el(`<div class="overlay"><div class="card"><h2>${L('MAY NAKA-SAVE NA KASO', 'YOU HAVE A SAVED CASE')}</h2><p>${L('Kaso', 'Case')} #${c.num} · ${esc(c.title)}<br><b>${esc(ph)}</b></p><div class="row"><button class="btn primary" id="y">${L('ITULOY ANG KASO ▶', 'CONTINUE CASE ▶')}</button><button class="btn dark" id="n">${L('PUMUNTA SA OPISINA', 'GO TO THE OFFICE')}</button></div></div></div>`);
     stage.appendChild(o);
     tap($('#y', o), () => { o.remove(); resumeRun(); });
     tap($('#n', o), () => { o.remove(); desk(); });
   }
 
   function confirmBox(msg, yes) {
-    const o = el(`<div class="overlay"><div class="card"><h2>Sigurado ka?</h2><p>${esc(msg)}</p><div class="row"><button class="btn primary" id="y">OO</button><button class="btn dark" id="n">HINDI</button></div></div></div>`);
+    const o = el(`<div class="overlay"><div class="card"><h2>${L('Sigurado ka?', 'Are you sure?')}</h2><p>${esc(msg)}</p><div class="row"><button class="btn primary" id="y">${L('OO', 'YES')}</button><button class="btn dark" id="n">${L('HINDI', 'NO')}</button></div></div></div>`);
     stage.appendChild(o);
     tap($('#y', o), () => { o.remove(); yes(); });
     tap($('#n', o), () => o.remove());
@@ -200,38 +206,38 @@
     const solvedN = Object.keys(save.solved).length;
     const lastDone = CHAPTERS.filter((ch) => save.chapterDone[ch.n]).pop();
     let status;
-    if (nc) status = `Bagong tawag! Sagutin ang <b>telepono</b> para sa Kaso #${nc.num}.`;
-    else if (pc) status = `Kumpleto ang mga palatandaan ng ${esc(pc.title.split(':')[0])}. Pumunta sa <b>corkboard</b>.`;
-    else if (lastDone && lastDone.n === CHAPTERS.length) status = 'Nahuli na si Ang Anino. Lutasin ulit ang mga kaso para sa 3★ at mga medalya.';
-    else status = 'Tahimik ang gabi.';
+    if (nc) status = L(`Bagong tawag! Sagutin ang <b>telepono</b> para sa Kaso #${nc.num}.`, `New call! Answer the <b>phone</b> for Case #${nc.num}.`);
+    else if (pc) status = L(`Kumpleto ang mga palatandaan ng ${esc(pc.title.split(':')[0])}. Pumunta sa <b>corkboard</b>.`, `All the clues of ${esc(pc.title.split(':')[0])} are in. Go to the <b>corkboard</b>.`);
+    else if (lastDone && lastDone.n === CHAPTERS.length) status = L('Nahuli na si Ang Anino. Lutasin ulit ang mga kaso para sa 3★ at mga medalya.', 'Ang Anino has been caught. Replay cases for 3★ and medals.');
+    else status = L('Tahimik ang gabi.', 'A quiet night.');
     const s = show(`<div class="screen desk">
       ${ART.desk(save)}
       <div class="rain" style="left:768px;top:42px;width:464px;height:356px;opacity:.8"></div>
       <div class="topbar" style="background:linear-gradient(rgba(20,12,6,.92),rgba(20,12,6,.75))">
-        <div class="title-txt">OPISINA NI INSP. MATEO REYES <small>${esc(CHAPTERS[currentChapter() - 1].title)}</small></div>
-        <div class="chip" title="Pera"><span class="peso">₱</span><span>${save.pesos}</span></div>
-        <div class="chip" title="Nalutas na kaso">📁 ${solvedN}/${CASES.length}</div>
-        ${save.run && caseById(save.run.cid) ? '<button class="btn small primary" id="resume">▶ ITULOY #' + caseById(save.run.cid).num + '</button>' : ''}
+        <div class="title-txt">${L('OPISINA NI INSP. MATEO REYES', "INSP. MATEO REYES'S OFFICE")} <small>${esc(CHAPTERS[currentChapter() - 1].title)}</small></div>
+        <div class="chip" title="${L('Pera', 'Money')}"><span class="peso">₱</span><span>${save.pesos}</span></div>
+        <div class="chip" title="${L('Nalutas na kaso', 'Solved cases')}">📁 ${solvedN}/${CASES.length}</div>
+        ${save.run && caseById(save.run.cid) ? '<button class="btn small primary" id="resume">▶ ' + L('ITULOY', 'RESUME') + ' #' + caseById(save.run.cid).num + '</button>' : ''}
         <button class="btn small dark" id="saveb">SAVE</button>
-        <button class="btn small gold" id="shop">TINDAHAN</button>
-        <button class="btn small dark" id="med">MEDALYA ${save.medals.length}/${MEDALS.length}</button>
+        <button class="btn small gold" id="shop">${L('TINDAHAN', 'SHOP')}</button>
+        <button class="btn small dark" id="med">${L('MEDALYA', 'MEDALS')} ${save.medals.length}/${MEDALS.length}</button>
         <button class="iconbtn" id="set" title="Settings" style="width:44px;height:44px;font-size:20px">⚙</button>
         <button class="iconbtn" id="fs" title="Fullscreen" style="width:44px;height:44px;font-size:20px">⛶</button>
         <button class="iconbtn" id="home" title="Title screen" style="width:44px;height:44px;font-size:20px">⏏</button>
       </div>
-      <button class="hotspot ${pc ? 'ringing' : ''}" id="hs-cork" style="left:34px;top:64px;width:412px;height:316px" aria-label="Corkboard"><span class="lbl">ANG ANINO · CORKBOARD</span></button>
-      <button class="hotspot top ${nc ? 'ringing' : ''}" id="hs-phone" style="left:186px;top:500px;width:170px;height:100px" aria-label="Telepono"><span class="lbl">${nc ? 'SAGUTIN ANG TAWAG' : 'TELEPONO'}</span></button>
+      <button class="hotspot ${pc ? 'ringing' : ''}" id="hs-cork" style="left:34px;top:64px;width:412px;height:316px" aria-label="Corkboard"><span class="lbl">${L('ANG ANINO · CORKBOARD', 'ANG ANINO · CORKBOARD')}</span></button>
+      <button class="hotspot top ${nc ? 'ringing' : ''}" id="hs-phone" style="left:186px;top:500px;width:170px;height:100px" aria-label="${L('Telepono', 'Phone')}"><span class="lbl">${nc ? L('SAGUTIN ANG TAWAG', 'ANSWER THE CALL') : L('TELEPONO', 'PHONE')}</span></button>
       ${nc ? '<div class="ringsfx" style="left:352px;top:478px">KRIIING!</div>' : ''}
-      <button class="hotspot" id="hs-type" style="left:500px;top:486px;width:320px;height:160px" aria-label="Mga Kaso"><span class="lbl">MGA KASO</span></button>
-      <button class="hotspot" id="hs-fold" style="left:120px;top:580px;width:270px;height:124px" aria-label="Paano maglaro"><span class="lbl">GABAY SA IMBESTIGASYON</span></button>
-      <button class="hotspot" id="hs-mug" style="left:1010px;top:500px;width:96px;height:130px" aria-label="Kape"><span class="lbl">KAPE${save.thermos ? ' +' + save.thermos * 2 : ''}</span></button>
+      <button class="hotspot" id="hs-type" style="left:500px;top:486px;width:320px;height:160px" aria-label="${L('Mga Kaso', 'Cases')}"><span class="lbl">${L('MGA KASO', 'CASE FILES')}</span></button>
+      <button class="hotspot" id="hs-fold" style="left:120px;top:580px;width:270px;height:124px" aria-label="${L('Paano maglaro', 'How to play')}"><span class="lbl">${L('GABAY SA IMBESTIGASYON', 'INVESTIGATION GUIDE')}</span></button>
+      <button class="hotspot" id="hs-mug" style="left:1010px;top:500px;width:96px;height:130px" aria-label="${L('Kape', 'Coffee')}"><span class="lbl">${L('KAPE', 'COFFEE')}${save.thermos ? ' +' + save.thermos * 2 : ''}</span></button>
       <div class="status">${status}</div>
     </div>`);
-    tap($('#hs-phone', s), () => { if (nc) { SFX.ring(); later(() => startCase(nc), 400); } else { SFX.click(); toast('Walang bagong tawag. Tingnan ang mga lumang kaso sa makinilya.'); } });
+    tap($('#hs-phone', s), () => { if (nc) { SFX.ring(); later(() => startCase(nc), 400); } else { SFX.click(); toast(L('Walang bagong tawag. Tingnan ang mga lumang kaso sa makinilya.', 'No new calls. Check your old cases at the typewriter.')); } });
     tap($('#hs-type', s), () => { SFX.type(); caseList(); });
     tap($('#hs-cork', s), () => { SFX.flip(); corkboard(); });
     tap($('#hs-fold', s), () => { SFX.flip(); howTo(); });
-    tap($('#hs-mug', s), () => { SFX.good(); toast(save.thermos ? `May ${save.thermos} thermos ka: +${save.thermos * 2} kape sa susunod na kaso.` : '"Barakong Batangas. Mapait — tulad ng katotohanan." — Mateo'); });
+    tap($('#hs-mug', s), () => { SFX.good(); toast(save.thermos ? L(`May ${save.thermos} thermos ka: +${save.thermos * 2} kape sa susunod na kaso.`, `You have ${save.thermos} thermos: +${save.thermos * 2} coffee next case.`) : L('"Barakong Batangas. Mapait — tulad ng katotohanan." — Mateo', '"Batangas barako. Bitter — like the truth." — Mateo')); });
     tap($('#shop', s), () => { SFX.click(); shop(); });
     tap($('#saveb', s), () => { SFX.click(); saveMenu(); });
     if ($('#resume', s)) tap($('#resume', s), () => { SFX.stamp(); resumeRun(); });
@@ -249,7 +255,7 @@
   }
 
   function modal(titleTxt, body, cls) {
-    const o = el(`<div class="modal-back"><div class="modal ${cls || ''}"><button class="x" aria-label="Isara">×</button><h2>${titleTxt}</h2><div class="body">${body}</div></div></div>`);
+    const o = el(`<div class="modal-back"><div class="modal ${cls || ''}"><button class="x" aria-label="${L('Isara', 'Close')}">×</button><h2>${titleTxt}</h2><div class="body">${body}</div></div></div>`);
     stage.appendChild(o);
     tap($('.x', o), () => { SFX.click(); o.remove(); });
     o.addEventListener('click', (e) => { if (e.target === o) o.remove(); });
@@ -260,35 +266,35 @@
     let html = '';
     CHAPTERS.forEach((ch) => {
       const cs = CASES.filter((c) => chapterOf(c) === ch.n);
-      html += `<h3 class="ch-h">${esc(ch.title)}${save.chapterDone[ch.n] ? ' <span>✔ TAPOS</span>' : ''}</h3><div class="cases">`;
+      html += `<h3 class="ch-h">${esc(ch.title)}${save.chapterDone[ch.n] ? ` <span>✔ ${L('TAPOS', 'DONE')}</span>` : ''}</h3><div class="cases">`;
       html += cs.map((c) => {
         const unlocked = isUnlocked(c), st = save.solved[c.id];
         const stars = st ? '★'.repeat(st) + '<span style="opacity:.25">' + '★'.repeat(3 - st) + '</span>' : '';
         return `<div class="casecard ${unlocked ? '' : 'locked'}">
-          <div class="num">KASO #${c.num}</div>
+          <div class="num">${L('KASO', 'CASE')} #${c.num}</div>
           <div class="thumb">${unlocked ? `<svg viewBox="0 60 600 300" preserveAspectRatio="xMidYMid slice">${c.scene(false)}</svg>` : ''}</div>
           <div class="nm">${unlocked ? esc(c.title) : '???'}</div>
-          <div class="pl">${unlocked ? esc(c.place) : 'Naka-lock — lutasin ang naunang kaso' + (chapterOf(c) > 1 ? ' at ang corkboard ng nakaraang kabanata.' : '.')}</div>
+          <div class="pl">${unlocked ? esc(c.place) : L('Naka-lock — lutasin ang naunang kaso', 'Locked — solve the previous case') + (chapterOf(c) > 1 ? L(' at ang corkboard ng nakaraang kabanata.', " and the last chapter's corkboard.") : '.')}</div>
           <div class="stars">${stars}</div>
-          ${unlocked ? `<button class="btn small ${st ? 'dark' : 'primary'}" data-case="${c.id}">${st ? 'ULITIN' : 'LARUIN'}</button>` : ''}
+          ${unlocked ? `<button class="btn small ${st ? 'dark' : 'primary'}" data-case="${c.id}">${st ? L('ULITIN', 'REPLAY') : L('LARUIN', 'PLAY')}</button>` : ''}
         </div>`;
       }).join('') + '</div>';
     });
-    const o = modal('MGA KASO', html);
+    const o = modal(L('MGA KASO', 'CASE FILES'), html);
     $$('[data-case]', o).forEach((b) => tap(b, () => { o.remove(); startCase(caseById(b.dataset.case)); }));
   }
 
   function shop() {
     const items = SHOP.map((it) => {
       const own = !it.consumable && save.owned.includes(it.id);
-      const label = own ? 'NASA MESA NA' : (it.consumable ? `BILHIN${save.thermos ? ' (' + save.thermos + ')' : ''}` : 'BILHIN');
+      const label = own ? L('NASA MESA NA', 'ON YOUR DESK') : (it.consumable ? `${L('BILHIN', 'BUY')}${save.thermos ? ' (' + save.thermos + ')' : ''}` : L('BILHIN', 'BUY'));
       return `<div class="shopitem"><b>${esc(it.name)}</b><div>${esc(it.desc)}</div><div style="font-family:var(--f-display);font-size:22px;color:var(--blood)">₱${it.price}</div>
         <button class="btn small ${own ? 'dark' : 'gold'}" data-buy="${it.id}" ${own ? 'disabled' : ''}>${label}</button></div>`;
     }).join('');
-    const o = modal(`TINDAHAN NI ALING SION <span style="font-size:22px;color:var(--blood)">· ₱${save.pesos}</span>`, `<p style="margin:0 0 12px">Palamutian ang mesa ni Mateo, o mag-ipon ng kape para sa susunod na kaso.</p><div class="shopgrid">${items}</div>`);
+    const o = modal(`${L('TINDAHAN NI ALING SION', "ALING SION'S SHOP")} <span style="font-size:22px;color:var(--blood)">· ₱${save.pesos}</span>`, `<p style="margin:0 0 12px">${L('Palamutian ang mesa ni Mateo, o mag-ipon ng kape para sa susunod na kaso.', "Decorate Mateo's desk, or stock up on coffee for the next case.")}</p><div class="shopgrid">${items}</div>`);
     $$('[data-buy]', o).forEach((b) => tap(b, () => {
       const it = SHOP.find((x) => x.id === b.dataset.buy);
-      if (save.pesos < it.price) { SFX.bad(); toast(`Kulang ang pera. Kailangan ng ₱${it.price}.`); return; }
+      if (save.pesos < it.price) { SFX.bad(); toast(L(`Kulang ang pera. Kailangan ng ₱${it.price}.`, `Not enough money. You need ₱${it.price}.`)); return; }
       save.pesos -= it.price;
       if (it.consumable) save.thermos++; else save.owned.push(it.id);
       persist(); SFX.win();
@@ -299,30 +305,43 @@
 
   function medals() {
     const list = MEDALS.map((m) => { const got = save.medals.includes(m.id); return `<div class="medal ${got ? 'got' : ''}"><span class="mi">${got ? MEDAL_SVG : '?'}</span><span><b>${esc(m.name)}</b><br>${esc(m.desc)}</span></div>`; }).join('');
-    modal(`MGA MEDALYA <span style="font-size:22px;color:var(--blood)">· ${save.medals.length}/${MEDALS.length}</span>`, `<div class="medals">${list}</div>`);
+    modal(`${L('MGA MEDALYA', 'MEDALS')} <span style="font-size:22px;color:var(--blood)">· ${save.medals.length}/${MEDALS.length}</span>`, `<div class="medals">${list}</div>`);
   }
 
   function settings() {
     const o = modal('SETTINGS', `<div class="settings">
-      <label for="set-snd">Tunog</label><button class="btn small ${save.sound ? 'gold' : 'dark'}" id="set-snd">${save.sound ? 'BUKAS 🔊' : 'SARADO 🔇'}</button>
-      <label for="set-mus">Musika</label><input type="range" id="set-mus" min="0" max="1" step="0.05" value="${save.musicVol}">
+      <label>${L('Wika', 'Language')}</label><div style="display:flex;gap:8px"><button class="btn small ${EN ? 'dark' : 'gold'}" id="set-tl">FILIPINO</button><button class="btn small ${EN ? 'gold' : 'dark'}" id="set-en">ENGLISH</button></div>
+      <label for="set-snd">${L('Tunog', 'Sound')}</label><button class="btn small ${save.sound ? 'gold' : 'dark'}" id="set-snd">${save.sound ? L('BUKAS 🔊', 'ON 🔊') : L('SARADO 🔇', 'OFF 🔇')}</button>
+      <label for="set-mus">${L('Musika', 'Music')}</label><input type="range" id="set-mus" min="0" max="1" step="0.05" value="${save.musicVol}">
       <label for="set-sfx">Sound effects</label><input type="range" id="set-sfx" min="0" max="1" step="0.05" value="${save.sfxVol}">
-      <label>Tutorial</label><button class="btn small dark" id="set-tut">IPAKITA ULIT</button>
-      <label>Save / Load</label><button class="btn small gold" id="set-save">BUKSAN</button>
-      <label>Progreso</label><button class="btn small primary" id="set-reset">BURAHIN LAHAT</button>
+      <label>Tutorial</label><button class="btn small dark" id="set-tut">${L('IPAKITA ULIT', 'SHOW AGAIN')}</button>
+      <label>Save / Load</label><button class="btn small gold" id="set-save">${L('BUKSAN', 'OPEN')}</button>
+      <label>${L('Progreso', 'Progress')}</label><button class="btn small primary" id="set-reset">${L('BURAHIN LAHAT', 'ERASE ALL')}</button>
       <label>Developer</label><button class="btn small dark" id="set-dev">${DEV.on ? 'DEV PANEL 🛠' : 'DEVELOPER MODE 🔒'}</button>
     </div>`);
     tap($('#set-save', o), () => { o.remove(); saveMenu(); });
+    tap($('#set-tl', o), () => { if (EN) setLang('tl'); });
+    tap($('#set-en', o), () => { if (!EN) setLang('en'); });
     tap($('#set-dev', o), () => { o.remove(); if (DEV.on) devPanel(); else devLogin(); });
     tap($('#set-snd', o), () => { save.sound = !save.sound; persist(); SFX.setEnabled(save.sound); o.remove(); settings(); });
     $('#set-mus', o).addEventListener('input', (e) => { save.musicVol = +e.target.value; SFX.setMusicVol(save.musicVol); persist(); });
     $('#set-sfx', o).addEventListener('input', (e) => { save.sfxVol = +e.target.value; SFX.setSfxVol(save.sfxVol); persist(); });
     $('#set-sfx', o).addEventListener('change', () => SFX.good());
-    tap($('#set-tut', o), () => { save.tut = {}; persist(); toast('Lalabas ulit ang tutorial sa susunod na kaso.'); });
-    tap($('#set-reset', o), () => confirmBox('Burahin ang lahat ng progreso, pera at medalya?', () => { save = DEF(); persist(); title(); }));
+    tap($('#set-tut', o), () => { save.tut = {}; persist(); toast(L('Lalabas ulit ang tutorial sa susunod na kaso.', 'The tutorial will show again in the next case.')); });
+    tap($('#set-reset', o), () => confirmBox(L('Burahin ang lahat ng progreso, pera at medalya?', 'Erase all progress, money and medals?'), () => { save = DEF(); persist(); title(); }));
   }
 
   function howTo() {
+    if (EN) {
+      modal('INVESTIGATION GUIDE', `<div class="howto"><ol>
+      <li><b>COMIC</b> — Read the story. Tap anywhere to continue.</li>
+      <li><b>CASE OUTLINE</b> — Meet the victim and the four suspects. Tap each suspect in the lineup.</li>
+      <li><b>FIND THE EVIDENCE</b> — Compare the CCTV still (left) with the scene now (right). Tap what changed. Use <b>ZOOM</b>, pinch or scroll to get closer, and drag to move around. Each wrong tap: −5 seconds. <b>INSPECT</b> points out one clue for 1 coffee.</li>
+      <li><b>CASE FILES</b> — Check every suspect's alibi on the timeline. New records will turn up.</li>
+      <li><b>INTERROGATION</b> — Talk to the suspects. Pick a <i>statement</i>, pick a piece of evidence, and press <b>OBJECTION!</b> when they lie. Then put two pieces of evidence in <i>Weapon/Method</i> and <i>Motive/Proof</i>, and press <b>ARREST!</b> Each wrong objection or accusation: −1 coffee.</li>
+    </ol><p style="margin-top:12px">Every scene hides a <b style="color:var(--blood)">clue left by Ang Anino</b>. Collect all three in each chapter for the corkboard.</p></div>`, 'howto');
+      return;
+    }
     modal('GABAY SA IMBESTIGASYON', `<div class="howto"><ol>
       <li><b>KOMIKS</b> — Basahin ang kuwento. I-tap kahit saan para magpatuloy.</li>
       <li><b>BUOD NG KASO</b> — Kilalanin ang biktima at ang apat na suspek. I-tap ang bawat suspek sa lineup.</li>
@@ -351,16 +370,16 @@
   function komiks(panels, done) {
     const s = show(`<div class="screen komiks">
       <div class="dots">${panels.map(() => '<i></i>').join('')}</div>
-      <button class="btn small dark skip">LAKTAWAN ▸▸</button>
+      <button class="btn small dark skip">${L('LAKTAWAN ▸▸', 'SKIP ▸▸')}</button>
       <div class="track">${panels.map(panelHTML).join('')}</div>
-      <div class="hint">I-tap para magpatuloy ▸</div>
+      <div class="hint">${L('I-tap para magpatuloy ▸', 'Tap to continue ▸')}</div>
     </div>`);
     const track = $('.track', s), pEls = $$('.kpanel', s), dots = $$('.dots i', s);
     let pi = -1, bi = 0, finished = false;
     function beatSound(b) {
       if (!b.sfx) { SFX.tap(); return; }
       const t = b.sfx.toUpperCase();
-      if (t.includes('KRII')) SFX.ring(); else if (t.includes('KIDLAT')) SFX.thunder(); else if (t.includes('WEE')) SFX.siren(); else if (t.includes('BLAG') || t.includes('KRASH')) SFX.slam(); else if (t.includes('KLIK')) SFX.click(); else SFX.flip();
+      if (t.includes('KRII') || t.includes('RIIING')) SFX.ring(); else if (t.includes('KIDLAT') || t.includes('BOOM')) SFX.thunder(); else if (t.includes('WEE')) SFX.siren(); else if (t.includes('BLAG') || t.includes('KRASH')) SFX.slam(); else if (t.includes('KLIK')) SFX.click(); else SFX.flip();
     }
     function showBeat(b) {
       const pe = pEls[pi];
@@ -430,42 +449,42 @@
 
   function topbar(c, phase, extra) {
     return `<div class="topbar">
-      <button class="back" id="tb-back"><span>↩</span>OPISINA</button>
-      <div class="title-txt">KASO #${c.num} · ${esc(c.title.toUpperCase())}<small>${esc(phase)}</small></div>
+      <button class="back" id="tb-back"><span>↩</span>${L('OPISINA', 'OFFICE')}</button>
+      <div class="title-txt">${L('KASO', 'CASE')} #${c.num} · ${esc(c.title.toUpperCase())}<small>${esc(phase)}</small></div>
       ${extra || ''}
     </div>`;
   }
-  function bindBack(s) { tap($('#tb-back', s), () => { persistRun(); desk(); toast('Naka-save ang kaso. Pindutin ang ▶ ITULOY para bumalik.'); }); }
+  function bindBack(s) { tap($('#tb-back', s), () => { persistRun(); desk(); toast(L('Naka-save ang kaso. Pindutin ang ▶ ITULOY para bumalik.', 'Case saved. Press ▶ RESUME to come back.')); }); }
 
   /* ---------------- PHASE 2: OUTLINE ---------------- */
   function outline(c) {
     SFX.rain(false); SFX.music('noir'); persistRun('outline');
     const v = c.victim;
     const s = show(`<div class="screen outline woodbg">
-      ${topbar(c, 'Yugto 2 · Buod ng Kaso at mga Suspek')}
-      <div class="folder" style="left:26px;top:84px;width:610px;height:620px"><span class="tabname">KASO #${c.num}</span>
+      ${topbar(c, L('Yugto 2 · Buod ng Kaso at mga Suspek', 'Phase 2 · Case Outline and Suspects'))}
+      <div class="folder" style="left:26px;top:84px;width:610px;height:620px"><span class="tabname">${L('KASO', 'CASE')} #${c.num}</span>
         <div class="clip"></div>
         <div class="sheet">
-          <h2>BUOD NG KASO</h2><div class="sub">Pangkalahatang-tanaw ng insidente</div>
-          <div class="caseno">KASO BLG.<b>${c.num}</b></div>
+          <h2>${L('BUOD NG KASO', 'CASE OUTLINE')}</h2><div class="sub">${L('Pangkalahatang-tanaw ng insidente', 'Overview of the incident')}</div>
+          <div class="caseno">${L('KASO BLG.', 'CASE NO.')}<b>${c.num}</b></div>
           <div style="display:flex;gap:14px;align-items:flex-start">
             <div class="polaroid" style="width:330px;height:228px;transform:rotate(-2deg)"><svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice">${c.scene(true)}</svg><div class="pc">${esc(c.place)}</div></div>
-            <div class="polaroid" style="width:150px;height:186px;transform:rotate(3deg);background:#fff"><div style="width:100%;height:100%;background:#cdbf9c">${charSVG(v.look, 'closed')}</div><div class="pc">Biktima</div></div>
+            <div class="polaroid" style="width:150px;height:186px;transform:rotate(3deg);background:#fff"><div style="width:100%;height:100%;background:#cdbf9c">${charSVG(v.look, 'closed')}</div><div class="pc">${L('Biktima', 'Victim')}</div></div>
           </div>
           <table class="facts">
-            <tr><td>Biktima</td><td><b>${esc(v.name)}</b> — ${esc(v.desc)}</td></tr>
-            <tr><td>Sanhi</td><td>${esc(v.cause)}</td></tr>
-            <tr><td>Lugar</td><td>${esc(v.found)}</td></tr>
-            <tr><td>Oras ng krimen</td><td class="red">${esc(v.windowText)} (tantiya)</td></tr>
-            <tr><td>Nakatagpo</td><td>${esc(v.foundBy)}</td></tr>
-            <tr><td>Panahon</td><td>${esc(v.weather)}</td></tr>
+            <tr><td>${L('Biktima', 'Victim')}</td><td><b>${esc(v.name)}</b> — ${esc(v.desc)}</td></tr>
+            <tr><td>${L('Sanhi', 'Cause')}</td><td>${esc(v.cause)}</td></tr>
+            <tr><td>${L('Lugar', 'Location')}</td><td>${esc(v.found)}</td></tr>
+            <tr><td>${L('Oras ng krimen', 'Time of crime')}</td><td class="red">${esc(v.windowText)} ${L('(tantiya)', '(estimated)')}</td></tr>
+            <tr><td>${L('Nakatagpo', 'Found by')}</td><td>${esc(v.foundBy)}</td></tr>
+            <tr><td>${L('Panahon', 'Weather')}</td><td>${esc(v.weather)}</td></tr>
           </table>
         </div>
       </div>
-      <div class="lu"><span class="lt">MGA SUSPEK</span><div id="lu-svg" style="width:100%;height:100%"></div></div>
+      <div class="lu"><span class="lt">${L('MGA SUSPEK', 'SUSPECTS')}</span><div id="lu-svg" style="width:100%;height:100%"></div></div>
       <div class="info" id="lu-info"></div>
-      <div class="banner"><em>MAY NAGSISINUNGALING!</em><small>Apat na suspek, iisang salarin.</small></div>
-      <button class="btn primary" id="go" style="position:absolute;right:40px;top:640px">IMBESTIGAHAN ▶</button>
+      <div class="banner"><em>${L('MAY NAGSISINUNGALING!', 'SOMEONE IS LYING!')}</em><small>${L('Apat na suspek, iisang salarin.', 'Four suspects, one culprit.')}</small></div>
+      <button class="btn primary" id="go" style="position:absolute;right:40px;top:640px">${L('IMBESTIGAHAN ▶', 'INVESTIGATE ▶')}</button>
     </div>`);
     bindBack(s);
     const luWrap = $('#lu-svg', s), info = $('#lu-info', s);
@@ -473,7 +492,7 @@
       const list = c.suspects.map((p) => ({ id: p.id, name: p.name, h: p.h, look: CHARS[p.id] }));
       luWrap.innerHTML = ART.lineup(list, id);
       const p = suspectOf(c, id);
-      info.innerHTML = `<div class="pp">${charSVG(p.id, 'neutral')}</div><div><b>${esc(p.name)}</b> · <span style="color:var(--blood)">${esc(p.role)}</span><br>Alibi: ${esc(p.alibi)}<br><span style="color:var(--sepia)">Tala: ${esc(p.note)}</span></div>`;
+      info.innerHTML = `<div class="pp">${charSVG(p.id, 'neutral')}</div><div><b>${esc(p.name)}</b> · <span style="color:var(--blood)">${esc(p.role)}</span><br>Alibi: ${esc(p.alibi)}<br><span style="color:var(--sepia)">${L('Tala', 'Note')}: ${esc(p.note)}</span></div>`;
       $$('.lu-fig', luWrap).forEach((g) => g.addEventListener('click', () => { SFX.tap(); pick(g.dataset.suspect); }));
     }
     pick(c.suspects[0].id);
@@ -485,18 +504,18 @@
     SFX.music('tension'); persistRun('inv');
     const partner = c.partner || { c: 'jessa', name: 'PO2 JESSA DIMACULANGAN · SOCO' };
     const n = c.clues.length;
-    const extra = `<div class="hud-mid"><span class="objective">HANAPIN: ${n}</span><div class="flipclock" id="clock"></div></div>${kapeHTML(run.kape)}<button class="hintbtn" id="zoom" title="Zoom">⊕ ZOOM</button><button class="hintbtn" id="hint" title="Suriin (−1 kape)">${LENS_SVG}SURIIN −1☕</button><button class="iconbtn" id="pause" style="width:44px;height:44px;font-size:20px" title="Pause">❚❚</button>`;
+    const extra = `<div class="hud-mid"><span class="objective">${L('HANAPIN', 'FIND')}: ${n}</span><div class="flipclock" id="clock"></div></div>${kapeHTML(run.kape)}<button class="hintbtn" id="zoom" title="Zoom">⊕ ZOOM</button><button class="hintbtn" id="hint" title="${L('Suriin (−1 kape)', 'Inspect (−1 coffee)')}">${LENS_SVG}${L('SURIIN', 'INSPECT')} −1☕</button><button class="iconbtn" id="pause" style="width:44px;height:44px;font-size:20px" title="Pause">❚❚</button>`;
     const s = show(`<div class="screen inv">
-      ${topbar(c, 'Yugto 3 · Hanapin ang Ebidensya', extra)}
+      ${topbar(c, L('Yugto 3 · Hanapin ang Ebidensya', 'Phase 3 · Find the Evidence'), extra)}
       <div class="spotpanel cctv" id="pA" style="left:12px"><svg viewBox="0 0 600 400" preserveAspectRatio="none">${c.scene(false)}<g class="marks"></g></svg><div class="plabel"><span class="rec"></span>${esc(c.beforeLabel)}</div><div class="zoomtag" hidden></div></div>
       <div class="spotpanel soco" id="pB" style="left:648px"><svg viewBox="0 0 600 400" preserveAspectRatio="none">${c.scene(true)}<g class="marks"></g></svg><div class="plabel">📷 ${esc(c.afterLabel)}</div><div class="zoomtag" hidden></div></div>
       <div class="talk"><div class="pp">${charSVG(partner.c, 'determined')}</div><div class="saybox" id="say"><span class="who">${esc(partner.name)}</span><span id="saytx"></span></div></div>
-      <div class="tray"><div class="th">EBIDENSYANG NAKALAP <span id="cnt">0 / ${n}</span></div><div class="slots" style="grid-template-columns:repeat(${n},1fr)">${c.clues.map((cl) => `<div class="cslot" data-c="${cl.id}">?</div>`).join('')}</div><div class="lastfound" id="last">Ikumpara ang dalawang larawan. Ano ang nagbago?</div></div>
+      <div class="tray"><div class="th">${L('EBIDENSYANG NAKALAP', 'EVIDENCE COLLECTED')} <span id="cnt">0 / ${n}</span></div><div class="slots" style="grid-template-columns:repeat(${n},1fr)">${c.clues.map((cl) => `<div class="cslot" data-c="${cl.id}">?</div>`).join('')}</div><div class="lastfound" id="last">${L('Ikumpara ang dalawang larawan. Ano ang nagbago?', 'Compare the two pictures. What changed?')}</div></div>
     </div>`);
     bindBack(s);
     const pA = $('#pA', s), pB = $('#pB', s), panels = [pA, pB];
     const say = (t) => { $('#saytx', s).textContent = t; };
-    say(`Inspector, ito ang kuha ng CCTV bago ang krimen, at ito ang eksena ngayon. ${n} ang pinagbago — hanapin natin lahat!`);
+    say(L(`Inspector, ito ang kuha ng CCTV bago ang krimen, at ito ang eksena ngayon. ${n} ang pinagbago — hanapin natin lahat!`, `Inspector, here's the CCTV still from before the crime, and here's the scene now. ${n} things changed — let's find them all!`));
     const clockEl = $('#clock', s);
     function drawClock() {
       const t = Math.max(0, run.timeLeft), m = Math.floor(t / 60), sec = t % 60;
@@ -625,12 +644,12 @@
       $$('.ring-hint', s).forEach((h) => h.remove());
       if (view.w < 599) setView(cl.x - view.w / 2, cl.y - view.h / 2, view.w);
       $('.marks', pB).insertAdjacentHTML('beforeend', `<circle class="ring-hint" cx="${cl.x}" cy="${cl.y}" r="${cl.r + 10}"/>`);
-      say('Tingnan mo rito, Inspector... may kakaiba sa bahaging ito.');
+      say(L('Tingnan mo rito, Inspector... may kakaiba sa bahaging ito.', "Look here, Inspector... something's off in this spot."));
       setTimeout(() => $$('.ring-hint', s).forEach((h) => h.remove()), 3500);
     });
     tap($('#pause', s), () => {
       paused = true;
-      const o = el(`<div class="overlay"><div class="card"><h2>NAKA-PAUSE</h2><p>Huminga muna, Inspector.</p><div class="row"><button class="btn primary" id="r">ITULOY</button><button class="btn dark" id="q">BUMALIK SA OPISINA</button></div></div></div>`);
+      const o = el(`<div class="overlay"><div class="card"><h2>${L('NAKA-PAUSE', 'PAUSED')}</h2><p>${L('Huminga muna, Inspector.', 'Take a breath, Inspector.')}</p><div class="row"><button class="btn primary" id="r">${L('ITULOY', 'RESUME')}</button><button class="btn dark" id="q">${L('BUMALIK SA OPISINA', 'BACK TO THE OFFICE')}</button></div></div></div>`);
       s.appendChild(o);
       tap($('#r', o), () => { o.remove(); paused = false; });
       tap($('#q', o), () => desk());
@@ -639,7 +658,7 @@
       if (done || paused) return;
       paused = true; run.timeouts++; SFX.lose();
       const free = run.kape <= 0;
-      const o = el(`<div class="overlay"><div class="card"><div class="stamp">UBOS NA ANG ORAS!</div><p>${free ? 'Wala ka nang kape... pero hindi sumusuko ang isang detektib.' : 'Uminom ng kape para sa dagdag na 60 segundo.'}</p><div class="row"><button class="btn primary" id="r">${free ? 'SUBUKAN ULIT (+60s)' : 'MAGKAPE (+60s, −1☕)'}</button></div></div></div>`);
+      const o = el(`<div class="overlay"><div class="card"><div class="stamp">${L('UBOS NA ANG ORAS!', "TIME'S UP!")}</div><p>${free ? L('Wala ka nang kape... pero hindi sumusuko ang isang detektib.', 'No coffee left... but a detective never gives up.') : L('Uminom ng kape para sa dagdag na 60 segundo.', 'Drink a coffee for 60 more seconds.')}</p><div class="row"><button class="btn primary" id="r">${free ? L('SUBUKAN ULIT (+60s)', 'TRY AGAIN (+60s)') : L('MAGKAPE (+60s, −1☕)', 'DRINK COFFEE (+60s, −1☕)')}</button></div></div></div>`);
       s.appendChild(o);
       tap($('#r', o), () => { if (!free) { useKape(); refreshKape(); } run.timeLeft = 60; drawClock(); o.remove(); paused = false; persistRun(); });
     }
@@ -648,9 +667,9 @@
       if (run.hints === 0) award('walanghint');
       if (run.misses === 0) award('walangmali');
       if (run.timeLeft >= 60 && run.timeouts === 0) award('mabilis');
-      say('Kumpleto na ang ebidensya, Inspector! Tingnan natin ang talaan ng oras.');
+      say(L('Kumpleto na ang ebidensya, Inspector! Tingnan natin ang talaan ng oras.', "That's all the evidence, Inspector! Let's check the timeline."));
       later(() => {
-        const o = el(`<div class="overlay"><div class="card"><div class="stamp green">KUMPLETO!</div><p>Nakalap ang lahat ng ${n} ebidensya.<br>Natitirang oras: ${Math.floor(run.timeLeft / 60)}:${String(run.timeLeft % 60).padStart(2, '0')}</p><button class="btn primary" id="go">SURIIN ANG TALAAN ▶</button></div></div>`);
+        const o = el(`<div class="overlay"><div class="card"><div class="stamp green">${L('KUMPLETO!', 'COMPLETE!')}</div><p>${L(`Nakalap ang lahat ng ${n} ebidensya.`, `All ${n} pieces of evidence collected.`)}<br>${L('Natitirang oras', 'Time left')}: ${Math.floor(run.timeLeft / 60)}:${String(run.timeLeft % 60).padStart(2, '0')}</p><button class="btn primary" id="go">${L('SURIIN ANG TALAAN ▶', 'REVIEW THE FILES ▶')}</button></div></div>`);
         s.appendChild(o); SFX.stamp();
         tap($('#go', o), () => files(c));
       }, 900);
@@ -659,11 +678,11 @@
     if (!save.tut.inv && !run.sceneDone) {
       paused = true;
       later(() => coach('inv', [
-        { sel: '#pA', text: 'Ito ang kuha ng CCTV BAGO ang krimen.' },
-        { sel: '#pB', text: 'Ito ang eksena NGAYON. I-tap ang anumang nagbago — sa alinmang larawan.' },
-        { sel: '#zoom', text: 'Maliit ba? Pindutin ang ZOOM, o i-pinch / i-scroll ang larawan. I-drag para gumalaw.' },
-        { sel: '#hint', text: 'Naiipit? Ang SURIIN ay nagtuturo ng isang ebidensya — kapalit ng 1 tasa ng kape.' },
-        { sel: '#clock', text: 'Bawat maling tap ay −5 segundo. Bilis, Inspector!' }
+        { sel: '#pA', text: L('Ito ang kuha ng CCTV BAGO ang krimen.', 'This is the CCTV still from BEFORE the crime.') },
+        { sel: '#pB', text: L('Ito ang eksena NGAYON. I-tap ang anumang nagbago — sa alinmang larawan.', 'This is the scene NOW. Tap anything that changed — on either picture.') },
+        { sel: '#zoom', text: L('Maliit ba? Pindutin ang ZOOM, o i-pinch / i-scroll ang larawan. I-drag para gumalaw.', 'Too small? Press ZOOM, or pinch / scroll the picture. Drag to move around.') },
+        { sel: '#hint', text: L('Naiipit? Ang SURIIN ay nagtuturo ng isang ebidensya — kapalit ng 1 tasa ng kape.', 'Stuck? INSPECT points out one clue — for 1 cup of coffee.') },
+        { sel: '#clock', text: L('Bawat maling tap ay −5 segundo. Bilis, Inspector!', 'Each wrong tap costs 5 seconds. Hurry, Inspector!') }
       ], () => { paused = false; }), 300);
     }
   }
@@ -672,25 +691,25 @@
   function files(c) {
     SFX.music('noir'); persistRun('files');
     const s = show(`<div class="screen files woodbg">
-      ${topbar(c, 'Yugto 4 · Talaan at Oras ng Pangyayari', kapeHTML(run.kape))}
-      <div class="folder" style="left:26px;top:84px;width:560px;height:560px"><span class="tabname">EBIDENSYA</span><div class="clip"></div>
-        <div class="sheet"><h2>EBIDENSYA</h2><div class="sub">Listahan ng nakalap na ebidensya · i-tap ang (i)</div><div class="caseno">KASO BLG.<b>${c.num}</b></div>
+      ${topbar(c, L('Yugto 4 · Talaan at Oras ng Pangyayari', 'Phase 4 · Case Files and Timeline'), kapeHTML(run.kape))}
+      <div class="folder" style="left:26px;top:84px;width:560px;height:560px"><span class="tabname">${L('EBIDENSYA', 'EVIDENCE')}</span><div class="clip"></div>
+        <div class="sheet"><h2>${L('EBIDENSYA', 'EVIDENCE')}</h2><div class="sub">${L('Listahan ng nakalap na ebidensya · i-tap ang (i)', 'List of collected evidence · tap (i)')}</div><div class="caseno">${L('KASO BLG.', 'CASE NO.')}<b>${c.num}</b></div>
           <div class="ev-list" id="evl"></div>
-          <div class="ev-detail" id="evd">Pumili ng ebidensya para makita ang detalye.</div>
+          <div class="ev-detail" id="evd">${L('Pumili ng ebidensya para makita ang detalye.', 'Pick a piece of evidence to see the details.')}</div>
         </div></div>
       <div class="folder" style="left:612px;top:84px;width:642px;height:560px"><span class="tabname">TIMELINE</span><div class="clip"></div>
-        <div class="sheet"><h2>TIMELINE</h2><div class="sub">Oras-oras na talaan · Suriin ang bawat alibi</div><div class="caseno">KASO BLG.<b>${c.num}</b></div>
-          <div class="tl-win">⏱ Tantiyang oras ng krimen: ${esc(c.victim.windowText)}</div>
+        <div class="sheet"><h2>TIMELINE</h2><div class="sub">${L('Oras-oras na talaan · Suriin ang bawat alibi', 'Hour-by-hour log · Check every alibi')}</div><div class="caseno">${L('KASO BLG.', 'CASE NO.')}<b>${c.num}</b></div>
+          <div class="tl-win">⏱ ${L('Tantiyang oras ng krimen', 'Estimated time of crime')}: ${esc(c.victim.windowText)}</div>
           <div class="tl" id="tl"></div>
         </div></div>
       <div class="progress-note" id="pn"></div>
-      <button class="btn primary proceed" id="go" disabled>INTEROGASYON ▶</button>
+      <button class="btn primary proceed" id="go" disabled>${L('INTEROGASYON ▶', 'INTERROGATION ▶')}</button>
     </div>`);
     bindBack(s);
     let selected = null;
     function renderEv() {
       const items = evItems(c, run);
-      $('#evl', s).innerHTML = items.map((it) => `<div class="ev-row ${it.meta ? 'meta' : ''} ${selected === it.id ? 'sel' : ''}" data-id="${it.id}"><div class="ti">${it.thumb}</div><div class="nm">${esc(it.name)}<small>${it.meta ? '★ PALATANDAAN NI ANG ANINO' : esc(it.kind)}</small></div>${it.isNew ? '<span class="new">BAGO</span>' : ''}<span class="i">i</span></div>`).join('');
+      $('#evl', s).innerHTML = items.map((it) => `<div class="ev-row ${it.meta ? 'meta' : ''} ${selected === it.id ? 'sel' : ''}" data-id="${it.id}"><div class="ti">${it.thumb}</div><div class="nm">${esc(it.name)}<small>${it.meta ? L('★ PALATANDAAN NI ANG ANINO', "★ ANG ANINO'S CLUE") : esc(it.kind)}</small></div>${it.isNew ? `<span class="new">${L('BAGO', 'NEW')}</span>` : ''}<span class="i">i</span></div>`).join('');
       $$('.ev-row', s).forEach((r) => tap(r, () => {
         selected = r.dataset.id; SFX.tap();
         const it = items.find((x) => x.id === selected);
@@ -707,7 +726,7 @@
         let chk = '';
         if (e.alibi) {
           if (run.checked.has(e.who)) chk = `<div class="verdict ${sus.check.ok ? 'ok' : 'no'}">${esc(sus.check.text)}</div>`;
-          else chk = `<div class="chk"><button class="btn small gold" data-chk="${e.who}">SURIIN ANG ALIBI</button></div>`;
+          else chk = `<div class="chk"><button class="btn small gold" data-chk="${e.who}">${L('SURIIN ANG ALIBI', 'CHECK ALIBI')}</button></div>`;
         }
         return `<div class="tl-row ${inWin(e.t) ? 'inwin' : ''}"><div class="tm">${e.t}</div><div class="who ${sus ? '' : 'victim'}">${face}</div><div class="tx"><span class="nm">${sus ? esc(sus.name) + ' · ' + esc(sus.role) : esc(c.victim.name)}</span>${esc(e.text)}${chk}</div></div>`;
       }).join('');
@@ -722,38 +741,39 @@
     }
     function progress() {
       const total = c.suspects.length, got = run.checked.size;
-      $('#pn', s).textContent = got < total ? `Nasuri ang alibi: ${got}/${total}. Suriin ang lahat bago mag-interogasyon.` : 'Nasuri na ang lahat ng alibi. Oras na para harapin ang mga suspek.';
+      $('#pn', s).textContent = got < total ? L(`Nasuri ang alibi: ${got}/${total}. Suriin ang lahat bago mag-interogasyon.`, `Alibis checked: ${got}/${total}. Check them all before the interrogation.`) : L('Nasuri na ang lahat ng alibi. Oras na para harapin ang mga suspek.', 'Every alibi checked. Time to face the suspects.');
       $('#go', s).disabled = got < total;
     }
     renderEv(); renderTL(); progress();
     tap($('#go', s), () => { SFX.stamp(); interrogate(c); });
     later(() => coach('files', [
-      { sel: '#tl', text: 'Pindutin ang SURIIN ANG ALIBI ng bawat suspek. Lalabas kung totoo o hindi ang sinasabi nila — at may mga bagong rekord.' },
-      { sel: '#evl', text: 'Nandito ang lahat ng ebidensya at rekord. I-tap ang bawat isa para basahin ang detalye.' }
+      { sel: '#tl', text: L('Pindutin ang SURIIN ANG ALIBI ng bawat suspek. Lalabas kung totoo o hindi ang sinasabi nila — at may mga bagong rekord.', "Press CHECK ALIBI for each suspect. You'll see whether their story holds up — and new records will turn up.") },
+      { sel: '#evl', text: L('Nandito ang lahat ng ebidensya at rekord. I-tap ang bawat isa para basahin ang detalye.', 'All your evidence and records are here. Tap each one to read the details.') }
     ]), 300);
   }
 
   /* ---------------- PHASE 5: INTERROGATION ---------------- */
+  const SLOT_PH = { 1: L('Ano ang ginamit, o ano ang nagpapatunay na naroon siya?', 'What was used, or what proves they were there?'), 2: L('Bakit niya ginawa, o ano ang sumisira sa alibi niya?', 'Why did they do it, or what breaks their alibi?') };
   function interrogate(c) {
     SFX.music('room'); persistRun('room');
     const s = show(`<div class="screen room">
       <div class="bricks"></div>
       <div class="glow"></div>
-      ${topbar(c, 'Yugto 5 · Interogasyon at Akusasyon', `<button class="btn small dark" id="files">↩ TALAAN</button>${kapeHTML(run.kape)}`)}
-      <div class="hotseat"><div class="chair"></div><div class="sus" id="sus"></div><div class="table"></div><div class="empty" id="empty">Pumili ng suspek sa kanan.</div></div>
+      ${topbar(c, L('Yugto 5 · Interogasyon at Akusasyon', 'Phase 5 · Interrogation and Accusation'), `<button class="btn small dark" id="files">↩ ${L('TALAAN', 'FILES')}</button>${kapeHTML(run.kape)}`)}
+      <div class="hotseat"><div class="chair"></div><div class="sus" id="sus"></div><div class="table"></div><div class="empty" id="empty">${L('Pumili ng suspek sa kanan.', 'Pick a suspect on the right.')}</div></div>
       <div class="lamp"><div class="cord"></div><div class="shade"></div><div class="bulb"></div></div>
       <div class="speech" id="speech" hidden></div>
-      <div class="pahayag" id="pahayag" hidden><div class="ph-h">MGA PAHAYAG <span>pumili ng pahayag + ebidensya, saka TUTOL!</span></div><div class="ph-row"><div class="ph-list" id="phl"></div><button class="btn tutol" id="tutol">TUTOL!</button></div></div>
+      <div class="pahayag" id="pahayag" hidden><div class="ph-h">${L('MGA PAHAYAG', 'STATEMENTS')} <span>${L('pumili ng pahayag + ebidensya, saka TUTOL!', 'pick a statement + evidence, then OBJECTION!')}</span></div><div class="ph-row"><div class="ph-list" id="phl"></div><button class="btn tutol" id="tutol">${L('TUTOL!', 'OBJECTION!')}</button></div></div>
       <div class="accuse">
-        <h3>AKUSASYON</h3><div class="sub">* I-drag o i-tap ang ebidensya papunta sa slot.</div>
-        <div class="slot" data-slot="1" style="margin-top:8px"><span class="lab">1 · SANDATA / PARAAN</span><div class="ph">Ano ang ginamit, o ano ang nagpapatunay na naroon siya?</div></div>
-        <div class="slot" data-slot="2" style="margin-top:6px"><span class="lab">2 · MOTIBO / PATUNAY NG KASINUNGALINGAN</span><div class="ph">Bakit niya ginawa, o ano ang sumisira sa alibi niya?</div></div>
-        <button class="btn arrest" id="arrest" style="margin-top:auto">HULIHIN!</button>
+        <h3>${L('AKUSASYON', 'ACCUSATION')}</h3><div class="sub">${L('* I-drag o i-tap ang ebidensya papunta sa slot.', '* Drag or tap evidence into a slot.')}</div>
+        <div class="slot" data-slot="1" style="margin-top:8px"><span class="lab">${L('1 · SANDATA / PARAAN', '1 · WEAPON / METHOD')}</span><div class="ph">${SLOT_PH[1]}</div></div>
+        <div class="slot" data-slot="2" style="margin-top:6px"><span class="lab">${L('2 · MOTIBO / PATUNAY NG KASINUNGALINGAN', '2 · MOTIVE / PROOF OF THE LIE')}</span><div class="ph">${SLOT_PH[2]}</div></div>
+        <button class="btn arrest" id="arrest" style="margin-top:auto">${L('HULIHIN!', 'ARREST!')}</button>
       </div>
-      <div class="suspects"><h3>SUSPEK</h3><div class="sub">* Kausapin, saka piliin ang salarin.</div>
+      <div class="suspects"><h3>${L('SUSPEK', 'SUSPECTS')}</h3><div class="sub">${L('* Kausapin, saka piliin ang salarin.', '* Talk to them, then pick the culprit.')}</div>
         <div class="sgrid">${c.suspects.map((p) => `<button class="scard" data-s="${p.id}">${charSVG(p.id, 'neutral')}<span class="nm">${esc(p.name)}</span></button>`).join('')}</div>
       </div>
-      <div class="evtray"><div class="th">EBIDENSYA <span>Hilahin pataas papunta sa slot · o i-tap ang card, saka ang slot / TUTOL!</span></div><div class="evscroll" id="evs"></div></div>
+      <div class="evtray"><div class="th">${L('EBIDENSYA', 'EVIDENCE')} <span>${L('Hilahin pataas papunta sa slot · o i-tap ang card, saka ang slot / TUTOL!', 'Drag up into a slot · or tap a card, then a slot / OBJECTION!')}</span></div><div class="evscroll" id="evs"></div></div>
     </div>`);
     bindBack(s);
     tap($('#files', s), () => files(c));
@@ -763,15 +783,15 @@
 
     function renderCards() {
       const ansIds = DEV.on && DEV.answers ? [...c.solution.slot1, ...c.solution.slot2] : [];
-      $('#evs', s).innerHTML = items.map((it) => `<div class="ev-card ${ansIds.includes(it.id) ? 'dev-ok' : ''} ${it.meta ? 'meta' : ''} ${picked === it.id ? 'picked' : ''} ${(run.slot1 === it.id || run.slot2 === it.id) ? 'used' : ''}" data-id="${it.id}"><div class="ti">${it.thumb}</div><div class="nm">${esc(it.name)}</div><button class="i" data-i="${it.id}" aria-label="Detalye">i</button></div>`).join('');
+      $('#evs', s).innerHTML = items.map((it) => `<div class="ev-card ${ansIds.includes(it.id) ? 'dev-ok' : ''} ${it.meta ? 'meta' : ''} ${picked === it.id ? 'picked' : ''} ${(run.slot1 === it.id || run.slot2 === it.id) ? 'used' : ''}" data-id="${it.id}"><div class="ti">${it.thumb}</div><div class="nm">${esc(it.name)}</div><button class="i" data-i="${it.id}" aria-label="${L('Detalye', 'Details')}">i</button></div>`).join('');
     }
     function renderSlots() {
       [1, 2].forEach((k) => {
         const slot = $(`.slot[data-slot="${k}"]`, s), id = run['slot' + k];
         const lab = slot.querySelector('.lab').outerHTML;
         slot.classList.toggle('filled', !!id); slot.classList.remove('bad');
-        if (id) { const it = items.find((x) => x.id === id); slot.innerHTML = `${lab}<div class="ti">${it.thumb}</div><div class="nm">${esc(it.name)}<br><small style="color:var(--sepia)">(i-tap para alisin)</small></div>`; }
-        else slot.innerHTML = `${lab}<div class="ph">${k === 1 ? 'Ano ang ginamit, o ano ang nagpapatunay na naroon siya?' : 'Bakit niya ginawa, o ano ang sumisira sa alibi niya?'}</div>`;
+        if (id) { const it = items.find((x) => x.id === id); slot.innerHTML = `${lab}<div class="ti">${it.thumb}</div><div class="nm">${esc(it.name)}<br><small style="color:var(--sepia)">${L('(i-tap para alisin)', '(tap to remove)')}</small></div>`; }
+        else slot.innerHTML = `${lab}<div class="ph">${SLOT_PH[k]}</div>`;
         slot.classList.toggle('ready', !!picked && !id);
       });
       $('#tutol', s).classList.toggle('ready', !!picked && stmt !== null);
@@ -787,7 +807,7 @@
       if (!p) { box.hidden = true; return; }
       box.hidden = false;
       const st = p.statements || [];
-      $('#phl', s).innerHTML = st.length ? st.map((x, i) => { const key = p.id + ':' + i, br = run.broken.has(key); return `<button class="stmt ${stmt === i ? 'sel' : ''} ${br ? 'broken' : ''}" data-st="${i}">“${esc(x.t)}”${br ? '<span class="basag">BASAG!</span>' : ''}</button>`; }).join('') : '<div class="stmt none">Walang pahayag.</div>';
+      $('#phl', s).innerHTML = st.length ? st.map((x, i) => { const key = p.id + ':' + i, br = run.broken.has(key); return `<button class="stmt ${stmt === i ? 'sel' : ''} ${br ? 'broken' : ''}" data-st="${i}">“${esc(x.t)}”${br ? `<span class="basag">${L('BASAG!', 'BROKEN!')}</span>` : ''}</button>`; }).join('') : `<div class="stmt none">${L('Walang pahayag.', 'No statements.')}</div>`;
       $$('.stmt[data-st]', s).forEach((b) => tap(b, () => { SFX.tap(); stmt = +b.dataset.st; renderStatements(); renderSlots(); speak(p.name, st[stmt].t); }));
     }
     function selectSuspect(id, expr) {
@@ -811,7 +831,7 @@
     function outOfKape() {
       if (run.kape > 0) return;
       later(() => {
-        const o = el(`<div class="overlay"><div class="card"><h2>PAGOD NA SI MATEO...</h2><p>Ubos na ang kape. Magtimpla ng panibagong barako at suriin ulit ang ebidensya.</p><button class="btn primary" id="r">MAGTIMPLA (+3☕)</button></div></div>`);
+        const o = el(`<div class="overlay"><div class="card"><h2>${L('PAGOD NA SI MATEO...', 'MATEO IS EXHAUSTED...')}</h2><p>${L('Ubos na ang kape. Magtimpla ng panibagong barako at suriin ulit ang ebidensya.', 'Out of coffee. Brew a fresh barako and go over the evidence again.')}</p><button class="btn primary" id="r">${L('MAGTIMPLA (+3☕)', 'BREW (+3☕)')}</button></div></div>`);
         s.appendChild(o);
         tap($('#r', o), () => { run.kape = 3; o.remove(); refreshKape(); });
       }, 1600);
@@ -820,11 +840,11 @@
     /* TUTOL! */
     tap($('#tutol', s), () => {
       const p = suspectOf(c, run.suspect);
-      if (!p) { SFX.bad(); toast('Pumili muna ng suspek.'); return; }
-      if (stmt === null) { SFX.bad(); toast('Pumili muna ng pahayag na kokontrahin.'); return; }
-      if (!picked) { SFX.bad(); toast('Pumili ng ebidensya sa ibaba, saka pindutin ang TUTOL!'); return; }
+      if (!p) { SFX.bad(); toast(L('Pumili muna ng suspek.', 'Pick a suspect first.')); return; }
+      if (stmt === null) { SFX.bad(); toast(L('Pumili muna ng pahayag na kokontrahin.', 'Pick a statement to challenge first.')); return; }
+      if (!picked) { SFX.bad(); toast(L('Pumili ng ebidensya sa ibaba, saka pindutin ang TUTOL!', 'Pick evidence below, then press OBJECTION!')); return; }
       const st = p.statements[stmt], key = p.id + ':' + stmt;
-      const burst = el('<div class="tutol-burst">TUTOL!</div>'); s.appendChild(burst); setTimeout(() => burst.remove(), 1000);
+      const burst = el(`<div class="tutol-burst">${L('TUTOL!', 'OBJECTION!')}</div>`); s.appendChild(burst); setTimeout(() => burst.remove(), 1000);
       SFX.objection();
       if (run.broken.has(key)) { speak(p.name, st.lie.say); picked = null; renderCards(); renderSlots(); return; }
       if (st.lie && st.lie.ev.includes(picked)) {
@@ -837,7 +857,7 @@
         later(() => face(p.id, 'nervous'), 1400);
       } else {
         run.badTutol++; useKape(); refreshKape(); SFX.bad();
-        face(p.id, 'smug'); speak(p.name, st.lie ? 'Ano\'ng kinalaman niyan sa sinabi ko? Wala, Inspector.' : 'Totoo ang sinabi ko. Wala kang makikitang butas diyan.');
+        face(p.id, 'smug'); speak(p.name, st.lie ? L('Ano\'ng kinalaman niyan sa sinabi ko? Wala, Inspector.', 'What does that have to do with what I said? Nothing, Inspector.') : L('Totoo ang sinabi ko. Wala kang makikitang butas diyan.', "I told the truth. You won't find a hole in it."));
         picked = null; renderCards(); renderSlots();
         outOfKape();
       }
@@ -900,30 +920,30 @@
     });
 
     tap($('#arrest', s), () => {
-      if (!run.suspect) { SFX.bad(); speak('PO2 Jessa', 'Inspector, sino ang aakusahan natin? Pumili muna ng suspek.'); return; }
-      if (!run.slot1 || !run.slot2) { SFX.bad(); speak('PO2 Jessa', 'Kulang pa, Inspector! Kailangan ng dalawang ebidensya sa mga slot.'); [1, 2].forEach((k) => { if (!run['slot' + k]) $(`.slot[data-slot="${k}"]`, s).classList.add('bad'); }); return; }
+      if (!run.suspect) { SFX.bad(); speak('PO2 Jessa', L('Inspector, sino ang aakusahan natin? Pumili muna ng suspek.', 'Inspector, who are we accusing? Pick a suspect first.')); return; }
+      if (!run.slot1 || !run.slot2) { SFX.bad(); speak('PO2 Jessa', L('Kulang pa, Inspector! Kailangan ng dalawang ebidensya sa mga slot.', "Not enough, Inspector! We need two pieces of evidence in the slots.")); [1, 2].forEach((k) => { if (!run['slot' + k]) $(`.slot[data-slot="${k}"]`, s).classList.add('bad'); }); return; }
       const sol = c.solution, p = suspectOf(c, run.suspect);
       const ok1 = sol.slot1.includes(run.slot1), ok2 = sol.slot2.includes(run.slot2);
       if (run.suspect === sol.culprit && ok1 && ok2) { SFX.slam(); arrest(c); return; }
       run.wrong++; useKape(); SFX.bad(); refreshKape(); persistRun();
       $('.hotseat', s).classList.remove('shake'); void $('.hotseat', s).offsetWidth; $('.hotseat', s).classList.add('shake');
-      if (run.suspect !== sol.culprit) { face(p.id, 'angry'); speak(p.name, p.deny || 'Hindi ako \'yan!'); }
+      if (run.suspect !== sol.culprit) { face(p.id, 'angry'); speak(p.name, p.deny || L('Hindi ako \'yan!', "It wasn't me!")); }
       else {
         face(p.id, 'smug'); speak(p.name, p.weak);
         later(() => {
           const weak = []; if (!ok1) weak.push(1); if (!ok2) weak.push(2);
           weak.forEach((k) => $(`.slot[data-slot="${k}"]`, s).classList.add('bad'));
-          toast(`Jessa: "Tama ang kutob mo, Inspector — pero mahina ang ebidensya sa slot ${weak.join(' at ')}."`);
+          toast(L(`Jessa: "Tama ang kutob mo, Inspector — pero mahina ang ebidensya sa slot ${weak.join(' at ')}."`, `Jessa: "Your hunch is right, Inspector — but the evidence in slot ${weak.join(' and ')} is weak."`));
         }, 900);
       }
       outOfKape();
     });
 
     later(() => coach('room', [
-      { sel: '.suspects', text: 'Pumili ng suspek para kausapin siya.' },
-      { sel: '.evtray', text: 'Ito ang lahat ng ebidensya mo. I-tap ang isang card para piliin ito.' },
-      { sel: '.hotseat', text: 'Kapag may napili kang suspek, lalabas ang mga PAHAYAG niya. Pumili ng pahayag, pumili ng ebidensyang kumokontra, at pindutin ang TUTOL! (−1 kape kapag mali.)' },
-      { sel: '.accuse', text: 'Kapag sigurado ka na: ilagay ang dalawang ebidensya rito, at pindutin ang HULIHIN!' }
+      { sel: '.suspects', text: L('Pumili ng suspek para kausapin siya.', 'Pick a suspect to talk to them.') },
+      { sel: '.evtray', text: L('Ito ang lahat ng ebidensya mo. I-tap ang isang card para piliin ito.', 'This is all your evidence. Tap a card to pick it.') },
+      { sel: '.hotseat', text: L('Kapag may napili kang suspek, lalabas ang mga PAHAYAG niya. Pumili ng pahayag, pumili ng ebidensyang kumokontra, at pindutin ang TUTOL! (−1 kape kapag mali.)', 'Once you pick a suspect, their STATEMENTS appear. Pick a statement, pick evidence that contradicts it, and press OBJECTION! (−1 coffee if wrong.)') },
+      { sel: '.accuse', text: L('Kapag sigurado ka na: ilagay ang dalawang ebidensya rito, at pindutin ang HULIHIN!', "When you're sure: put two pieces of evidence here and press ARREST!") }
     ]), 300);
   }
 
@@ -933,7 +953,7 @@
     const panels = [
       { bg: 'interrog', chars: [{ c: 'mateo', x: 130, y: 50, s: 7.4, e: 'shout', pose: 'point' }, { c: cid, x: 400, y: 70, s: 7, e: 'shock', flip: true }], beats: [
         { sfx: 'BLAG!', x: 4, y: 64, rot: -12, size: 60, color: '#ffd34a' },
-        { b: 'IKAW ANG MAY SALA! Arestado ka!', who: 'Mateo', x: 3, y: 4, w: 46, tail: 'l' }] },
+        { b: L('IKAW ANG MAY SALA! Arestado ka!', "YOU'RE GUILTY! You're under arrest!"), who: 'Mateo', x: 3, y: 4, w: 46, tail: 'l' }] },
       { bg: 'interrog', chars: [{ c: cid, x: 260, y: 56, s: 7.6, e: 'sad' }], beats: c.confess.map((t, i) => ({ b: t, who: cul.name, x: i ? 50 : 2, y: i ? 46 : 4, w: 48, tail: i ? 'l' : 'r' })) }
     ];
     komiks(panels, () => result(c));
@@ -960,26 +980,26 @@
     const s = show(`<div class="screen result woodbg">
       <div class="card">
         <div class="l">
-          <div class="stamp" style="align-self:flex-start;margin:6px 0 4px 10px">LUTAS NA!</div>
-          <h2 style="margin:0;font-family:var(--f-display);font-weight:400;font-size:34px">KASO #${c.num} · ${esc(c.title)}</h2>
+          <div class="stamp" style="align-self:flex-start;margin:6px 0 4px 10px">${L('LUTAS NA!', 'SOLVED!')}</div>
+          <h2 style="margin:0;font-family:var(--f-display);font-weight:400;font-size:34px">${L('KASO', 'CASE')} #${c.num} · ${esc(c.title)}</h2>
           <div class="stars">${'★'.repeat(stars)}<span class="off">${'★'.repeat(3 - stars)}</span></div>
           <div class="stats">
-            <span>Salarin</span><b>${esc(suspectOf(c, c.solution.culprit).name)}</b>
-            <span>Kabuuang oras</span><b>${Math.floor(secs / 60)}m ${secs % 60}s</b>
-            <span>Maling tap</span><b>${run.misses}</b>
-            <span>Ginamit na Suriin</span><b>${run.hints}</b>
-            <span>Nabasag na kasinungalingan</span><b>${run.broken.size} (+₱${lieBonus})</b>
-            <span>Maling akusasyon</span><b>${run.wrong}</b>
-            <span>Gantimpala</span><b style="color:var(--blood)">+₱${earn}${first ? '' : ' (replay)'}</b>
+            <span>${L('Salarin', 'Culprit')}</span><b>${esc(suspectOf(c, c.solution.culprit).name)}</b>
+            <span>${L('Kabuuang oras', 'Total time')}</span><b>${Math.floor(secs / 60)}m ${secs % 60}s</b>
+            <span>${L('Maling tap', 'Wrong taps')}</span><b>${run.misses}</b>
+            <span>${L('Ginamit na Suriin', 'Inspects used')}</span><b>${run.hints}</b>
+            <span>${L('Nabasag na kasinungalingan', 'Lies broken')}</span><b>${run.broken.size} (+₱${lieBonus})</b>
+            <span>${L('Maling akusasyon', 'Wrong accusations')}</span><b>${run.wrong}</b>
+            <span>${L('Gantimpala', 'Reward')}</span><b style="color:var(--blood)">+₱${earn}${first ? '' : ' (replay)'}</b>
           </div>
-          <p style="font-family:var(--f-type);font-size:14px;color:var(--sepia);margin:0">3★: hindi hihigit sa 1 Suriin, walang ubos-oras, walang maling akusasyon.</p>
-          <div style="display:flex;gap:12px;margin-top:auto"><button class="btn primary" id="go">BUMALIK SA OPISINA ▶</button><button class="btn dark" id="again">ULITIN</button></div>
+          <p style="font-family:var(--f-type);font-size:14px;color:var(--sepia);margin:0">${L('3★: hindi hihigit sa 1 Suriin, walang ubos-oras, walang maling akusasyon.', "3★: at most 1 Inspect, no time-outs, no wrong accusations.")}</p>
+          <div style="display:flex;gap:12px;margin-top:auto"><button class="btn primary" id="go">${L('BUMALIK SA OPISINA ▶', 'BACK TO THE OFFICE ▶')}</button><button class="btn dark" id="again">${L('ULITIN', 'REPLAY')}</button></div>
         </div>
         <div class="r">
-          <h3>PALATANDAAN NI ANG ANINO</h3>
+          <h3>${L('PALATANDAAN NI ANG ANINO', "ANG ANINO'S CLUE")}</h3>
           <div class="meta-ph">${clueThumb(c, metaClue)}</div>
           <p><b>${esc(metaClue.name)}</b></p>
-          <p>${esc(newMeta ? c.metaText : 'Nasa corkboard na ito.')}</p>
+          <p>${esc(newMeta ? c.metaText : L('Nasa corkboard na ito.', "It's already on the corkboard."))}</p>
         </div>
       </div>
     </div>`);
@@ -1007,27 +1027,27 @@
       const c = caseById(m.caseId), cl = c.clues.find((x) => x.id === m.id), [x, y, r] = pos[i];
       cards += got(m.id)
         ? `<div class="pin-card" style="left:${x}px;top:${y}px;width:260px;height:250px;transform:rotate(${r}deg)"><div class="ph">${ART.sceneThumb(c.scene, cl.x, cl.y, Math.max(60, cl.r * 2.8), false)}</div><div class="cp">${esc(m.name)}</div></div>`
-        : `<div class="pin-card unk" style="left:${x}px;top:${y}px;width:260px;height:250px;transform:rotate(${r}deg)"><div class="ph">?</div><div class="cp">${m.from} — hindi pa lutas</div></div>`;
+        : `<div class="pin-card unk" style="left:${x}px;top:${y}px;width:260px;height:250px;transform:rotate(${r}deg)"><div class="ph">?</div><div class="cp">${m.from} — ${L('hindi pa lutas', 'unsolved')}</div></div>`;
     });
     const centerCard = `<div class="pin-card" style="left:${center[0]}px;top:${center[1]}px;width:240px;height:260px;transform:rotate(2deg)"><div class="ph" style="background:#cdbf9c">${charSVG('tatay', 'neutral')}</div><div class="cp">SPO4 Ernesto Reyes</div></div>`;
     const sideCard = ch.n === 3
       ? `<div class="pin-card" style="left:930px;top:420px;width:220px;height:230px;transform:rotate(-4deg)"><div class="ph" style="background:${done ? '#cdbf9c' : '#111'}">${done ? charSVG('medina', 'sad') : charSVG('anino')}</div><div class="cp">${done ? 'KONS. ARTURO MEDINA' : 'ANG ANINO'}</div></div>`
       : ch.n === 2
-      ? `<div class="pin-card" style="left:930px;top:420px;width:220px;height:230px;transform:rotate(-4deg)"><div class="ph" style="background:${done ? '#cdbf9c' : '#111'}">${done ? charSVG('dizon', 'smug') : charSVG('anino')}</div><div class="cp">${done ? 'KAPT. RODEL DIZON' : 'ANG KASABWAT?'}</div></div>`
+      ? `<div class="pin-card" style="left:930px;top:420px;width:220px;height:230px;transform:rotate(-4deg)"><div class="ph" style="background:${done ? '#cdbf9c' : '#111'}">${done ? charSVG('dizon', 'smug') : charSVG('anino')}</div><div class="cp">${done ? 'KAPT. RODEL DIZON' : L('ANG KASABWAT?', 'THE ACCOMPLICE?')}</div></div>`
       : `<div class="pin-card" style="left:930px;top:420px;width:220px;height:230px;transform:rotate(-4deg)"><div class="ph" style="background:#111">${charSVG('anino')}</div><div class="cp">ANG ANINO</div></div>`;
     const yarnPts = [[240, 275], [1010, 255], [650, 525]];
     let yarn = '<svg style="position:absolute;inset:0;width:1280px;height:720px;pointer-events:none;z-index:1" viewBox="0 0 1280 720">';
     metas.forEach((m, i) => { if (got(m.id)) yarn += `<path d="M${yarnPts[i][0]},${yarnPts[i][1]} Q${(yarnPts[i][0] + 640) / 2},${(yarnPts[i][1] + 240) / 2 + 40} 640,240" stroke="#c0262e" stroke-width="4" fill="none"/>`; });
     if (done) yarn += `<path d="M640,240 Q900,300 1040,535" stroke="#c0262e" stroke-width="5" fill="none" stroke-dasharray="10 6"/>`;
     yarn += '</svg>';
-    const tabs = avail.length > 1 ? `<div class="cork-tabs">${avail.map((a) => `<button class="btn small ${a.n === ch.n ? 'gold' : 'dark'}" data-ch="${a.n}">KABANATA ${a.n}</button>`).join('')}</div>` : '';
+    const tabs = avail.length > 1 ? `<div class="cork-tabs">${avail.map((a) => `<button class="btn small ${a.n === ch.n ? 'gold' : 'dark'}" data-ch="${a.n}">${L('KABANATA', 'CHAPTER')} ${a.n}</button>`).join('')}</div>` : '';
     const s = show(`<div class="screen corkbg">
-      <div class="topbar"><button class="back" id="tb-back"><span>↩</span>OPISINA</button><div class="title-txt">CORKBOARD · ${esc(ch.title.toUpperCase())}<small>${metas.filter((m) => got(m.id)).length}/3 palatandaan</small></div>${tabs}</div>
+      <div class="topbar"><button class="back" id="tb-back"><span>↩</span>${L('OPISINA', 'OFFICE')}</button><div class="title-txt">CORKBOARD · ${esc(ch.title.toUpperCase())}<small>${metas.filter((m) => got(m.id)).length}/3 ${L('palatandaan', 'clues')}</small></div>${tabs}</div>
       <div class="corkframe"></div>
       ${yarn}
       <div style="position:absolute;inset:0;z-index:2">${centerCard}${cards}${sideCard}
-        ${done ? `<div class="cork-note" style="left:60px;top:500px;width:330px;transform:rotate(-3deg)">${esc(ch.note)}<br><b>— ITUTULOY</b></div>` : ''}
-        ${!all ? '<div class="cork-note" style="left:40px;top:470px;width:300px;transform:rotate(-3deg)">Lutasin ang mga kaso para makakuha ng palatandaan ni Ang Anino.</div>' : ''}
+        ${done ? `<div class="cork-note" style="left:60px;top:500px;width:330px;transform:rotate(-3deg)">${esc(ch.note)}<br><b>— ${ch.boss ? L('WAKAS', 'THE END') : L('ITUTULOY', 'TO BE CONTINUED')}</b></div>` : ''}
+        ${!all ? '<div class="cork-note" style="left:40px;top:470px;width:300px;transform:rotate(-3deg)">' + L('Lutasin ang mga kaso para makakuha ng palatandaan ni Ang Anino.', "Solve the cases to collect Ang Anino's clues.") + '</div>' : ''}
       </div>
       ${all && done && ch.boss ? '<button class="btn gold" id="credits" style="position:absolute;right:30px;bottom:24px;z-index:6">CREDITS ▶</button>' : ''}
     ${all && !done ? `<div class="cork-q" style="z-index:5"><h3>${esc(ch.question)}</h3><div class="opts">${ch.options.map((o, i) => `<button class="btn small" data-a="${i}">${esc(o)}</button>`).join('')}</div></div>` : ''}
@@ -1054,17 +1074,17 @@
     const items = METAS.filter((m) => save.metas.includes(m.id) || DEV.on).map((m) => { const c = caseById(m.caseId), cl = c.clues.find((x) => x.id === m.id); return { id: m.id, name: cl.name, info: cl.info, thumb: clueThumb(c, cl), from: m.from }; });
     const s = show(`<div class="screen room boss">
       <div class="bricks"></div><div class="glow" style="background:radial-gradient(ellipse at 50% 25%, rgba(255,120,120,.32), rgba(255,120,120,0) 65%)"></div>
-      <div class="topbar"><div class="title-txt">ANG HULING INTEROGASYON <small>Basagin ang lahat ng kasinungalingan ni Ang Anino</small></div><div id="bk">${kapeHTML(kape)}</div></div>
+      <div class="topbar"><div class="title-txt">${L('ANG HULING INTEROGASYON', 'THE FINAL INTERROGATION')} <small>${L('Basagin ang lahat ng kasinungalingan ni Ang Anino', "Break every one of Ang Anino's lies")}</small></div><div id="bk">${kapeHTML(kape)}</div></div>
       <div class="hotseat"><div class="chair"></div><div class="sus" id="sus">${charSVG(b.char, 'smug')}</div><div class="table"></div></div>
       <div class="lamp"><div class="cord"></div><div class="shade"></div><div class="bulb"></div></div>
       <div class="speech" id="speech"><span class="who">${esc(b.name)}</span>${esc(b.greet)}</div>
-      <div class="accuse boss-st"><h3>MGA PAHAYAG</h3><div class="sub">* Pumili ng pahayag, saka ng palatandaan sa ibaba.</div><div class="ph-list" id="bst"></div><button class="btn tutol" id="tutol" style="margin-top:auto;font-size:34px">TUTOL!</button></div>
-      <div class="suspects boss-prog"><h3>PROGRESO</h3><div class="sub">* 4 na kasinungalingan</div><div class="meter" id="meter"></div><div class="mateo-pp">${charSVG('mateo', 'determined')}</div></div>
-      <div class="evtray"><div class="th">MGA PALATANDAAN NI ANG ANINO <span>Lahat ng naipon mo sa tatlong kabanata</span></div><div class="evscroll" id="evs"></div></div>
+      <div class="accuse boss-st"><h3>${L('MGA PAHAYAG', 'STATEMENTS')}</h3><div class="sub">${L('* Pumili ng pahayag, saka ng palatandaan sa ibaba.', '* Pick a statement, then a clue below.')}</div><div class="ph-list" id="bst"></div><button class="btn tutol" id="tutol" style="margin-top:auto;font-size:34px">${L('TUTOL!', 'OBJECTION!')}</button></div>
+      <div class="suspects boss-prog"><h3>${L('PROGRESO', 'PROGRESS')}</h3><div class="sub">${L('* 4 na kasinungalingan', '* 4 lies')}</div><div class="meter" id="meter"></div><div class="mateo-pp">${charSVG('mateo', 'determined')}</div></div>
+      <div class="evtray"><div class="th">${L('MGA PALATANDAAN NI ANG ANINO', "ANG ANINO'S CLUES")} <span>${L('Lahat ng naipon mo sa tatlong kabanata', 'Everything you collected across three chapters')}</span></div><div class="evscroll" id="evs"></div></div>
     </div>`);
     function speak(who, t) { const sp = $('#speech', s); sp.innerHTML = `<span class="who">${esc(who)}</span>${esc(t)}`; sp.style.animation = 'none'; void sp.offsetWidth; sp.style.animation = 'pop .25s'; }
     function render() {
-      $('#bst', s).innerHTML = b.statements.map((x, i) => `<button class="stmt ${sel === i ? 'sel' : ''} ${broken.has(i) ? 'broken' : ''}" data-st="${i}">“${esc(x.t)}”${broken.has(i) ? '<span class="basag">BASAG!</span>' : ''}</button>`).join('');
+      $('#bst', s).innerHTML = b.statements.map((x, i) => `<button class="stmt ${sel === i ? 'sel' : ''} ${broken.has(i) ? 'broken' : ''}" data-st="${i}">“${esc(x.t)}”${broken.has(i) ? `<span class="basag">${L('BASAG!', 'BROKEN!')}</span>` : ''}</button>`).join('');
       $('#meter', s).innerHTML = b.statements.map((x, i) => `<i class="${broken.has(i) ? 'on' : ''}"></i>`).join('') + `<b>${broken.size}/4</b>`;
       $('#evs', s).innerHTML = items.map((it) => `<div class="ev-card meta ${picked === it.id ? 'picked' : ''} ${DEV.on && DEV.answers && sel !== null && b.statements[sel].ev.includes(it.id) ? 'dev-ok' : ''}" data-id="${it.id}"><div class="ti">${it.thumb}</div><div class="nm">${esc(it.name)}</div></div>`).join('');
       $$('[data-st]', s).forEach((x) => tap(x, () => { SFX.tap(); sel = +x.dataset.st; render(); speak(b.name, b.statements[sel].t); }));
@@ -1073,10 +1093,10 @@
     }
     render();
     tap($('#tutol', s), () => {
-      if (sel === null) { SFX.bad(); toast('Pumili muna ng pahayag.'); return; }
-      if (!picked) { SFX.bad(); toast('Pumili ng palatandaan sa ibaba.'); return; }
+      if (sel === null) { SFX.bad(); toast(L('Pumili muna ng pahayag.', 'Pick a statement first.')); return; }
+      if (!picked) { SFX.bad(); toast(L('Pumili ng palatandaan sa ibaba.', 'Pick a clue below.')); return; }
       const st = b.statements[sel];
-      const burst = el('<div class="tutol-burst">TUTOL!</div>'); s.appendChild(burst); setTimeout(() => burst.remove(), 1000);
+      const burst = el(`<div class="tutol-burst">${L('TUTOL!', 'OBJECTION!')}</div>`); s.appendChild(burst); setTimeout(() => burst.remove(), 1000);
       SFX.objection();
       if (st.ev.includes(picked) && !broken.has(sel)) {
         broken.add(sel); $('#sus', s).innerHTML = charSVG(b.char, 'shock'); speak(b.name, st.say);
@@ -1090,7 +1110,7 @@
         $('#sus', s).innerHTML = charSVG(b.char, 'smug'); speak(b.name, b.wrong[wrongs % b.wrong.length]);
         picked = null; render();
         if (kape <= 0) later(() => {
-          const o = el(`<div class="overlay"><div class="card"><h2>NAKALUSOT SI ANG ANINO...</h2><p>Ubos na ang kape mo. Pag-aralan ulit ang mga palatandaan, at harapin siya muli.</p><button class="btn primary" id="r">SUBUKAN ULIT</button></div></div>`);
+          const o = el(`<div class="overlay"><div class="card"><h2>${L('NAKALUSOT SI ANG ANINO...', 'ANG ANINO SLIPPED AWAY...')}</h2><p>${L('Ubos na ang kape mo. Pag-aralan ulit ang mga palatandaan, at harapin siya muli.', "You're out of coffee. Study the clues again, and face him once more.")}</p><button class="btn primary" id="r">${L('SUBUKAN ULIT', 'TRY AGAIN')}</button></div></div>`);
           s.appendChild(o); tap($('#r', o), () => bossFight(ch));
         }, 1400);
       }
@@ -1109,9 +1129,9 @@
     const s = show(`<div class="screen credits">
       <div class="rain" style="inset:0;opacity:.25"></div>
       <div class="roll">${CREDITS.map(([a, b]) => `<div class="cr"><b>${esc(a)}</b>${b ? `<span>${esc(b)}</span>` : ''}</div>`).join('')}
-        <div class="cr"><b>IYONG REKORD</b><span>Mga bituin: ${stars}/${CASES.length * 3} · Medalya: ${save.medals.length}/${MEDALS.length} · Pera: ₱${save.pesos}</span></div>
+        <div class="cr"><b>${L('IYONG REKORD', 'YOUR RECORD')}</b><span>${L('Mga bituin', 'Stars')}: ${stars}/${CASES.length * 3} · ${L('Medalya', 'Medals')}: ${save.medals.length}/${MEDALS.length} · ${L('Pera', 'Money')}: ₱${save.pesos}</span></div>
       </div>
-      <button class="btn primary" id="go" style="position:absolute;right:30px;bottom:24px">BUMALIK SA OPISINA ▶</button>
+      <button class="btn primary" id="go" style="position:absolute;right:30px;bottom:24px">${L('BUMALIK SA OPISINA ▶', 'BACK TO THE OFFICE ▶')}</button>
     </div>`);
     tap($('#go', s), () => desk());
   }
@@ -1124,9 +1144,9 @@
   function setSlots(v) { try { localStorage.setItem(SLOTKEY, JSON.stringify(v)); return true; } catch (e) { return false; } }
   function summary(d) {
     const n = Object.keys(d.solved || {}).length, chs = Object.keys(d.chapterDone || {}).length;
-    return `${n}/${CASES.length} kaso · ${chs ? 'Tapos: Kab. ' + Object.keys(d.chapterDone).join(', ') : 'Kabanata 1'} · ₱${d.pesos || 0}${d.run ? ' · may kasong naka-pause' : ''}`;
+    return `${n}/${CASES.length} ${L('kaso', 'cases')} · ${chs ? L('Tapos: Kab. ', 'Done: Ch. ') + Object.keys(d.chapterDone).join(', ') : L('Kabanata 1', 'Chapter 1')} · ₱${d.pesos || 0}${d.run ? L(' · may kasong naka-pause', ' · case in progress') : ''}`;
   }
-  const fmtTime = (t) => { try { return new Date(t).toLocaleString('fil-PH', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return new Date(t).toLocaleString(); } };
+  const fmtTime = (t) => { try { return new Date(t).toLocaleString(EN ? 'en-PH' : 'fil-PH', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return new Date(t).toLocaleString(); } };
   function encodeSave() { const j = JSON.stringify(save); let sum = 0; for (let i = 0; i < j.length; i++) sum = (sum + j.charCodeAt(i) * (i + 1)) % 9973; return 'KASO1-' + btoa(unescape(encodeURIComponent(j))) + '-' + sum; }
   function decodeSave(txt) {
     txt = String(txt || '').trim();
@@ -1146,53 +1166,53 @@
   function applyLoaded(data, msg) {
     save = Object.assign(DEF(), data); persist();
     SFX.setEnabled(save.sound); SFX.setMusicVol(save.musicVol); SFX.setSfxVol(save.sfxVol);
-    run = null; SFX.good(); desk(); toast(msg || 'Na-load ang save!');
+    run = null; SFX.good(); desk(); toast(msg || L('Na-load ang save!', 'Save loaded!'));
   }
   function saveMenu() {
     if (run) persistRun();
     const slots = getSlots();
     const slotHTML = [0, 1, 2].map((i) => {
       const sl = slots[i];
-      return `<div class="slotrow"><div class="sn">SLOT ${i + 1}</div><div class="si">${sl ? `<b>${esc(summary(sl.data))}</b><small>${esc(fmtTime(sl.time))}</small>` : '<i>Walang laman</i>'}</div>
-        <button class="btn small gold" data-sv="${i}">I-SAVE DITO</button><button class="btn small primary" data-ld="${i}" ${sl ? '' : 'disabled'}>I-LOAD</button><button class="btn small dark" data-dl="${i}" ${sl ? '' : 'disabled'}>✕</button></div>`;
+      return `<div class="slotrow"><div class="sn">SLOT ${i + 1}</div><div class="si">${sl ? `<b>${esc(summary(sl.data))}</b><small>${esc(fmtTime(sl.time))}</small>` : `<i>${L('Walang laman', 'Empty')}</i>`}</div>
+        <button class="btn small gold" data-sv="${i}">${L('I-SAVE DITO', 'SAVE HERE')}</button><button class="btn small primary" data-ld="${i}" ${sl ? '' : 'disabled'}>${L('I-LOAD', 'LOAD')}</button><button class="btn small dark" data-dl="${i}" ${sl ? '' : 'disabled'}>✕</button></div>`;
     }).join('');
     const o = modal('SAVE / LOAD', `<div class="savemenu">
-      <p class="note">✔ <b>Auto-save:</b> awtomatikong naka-save ang progreso mo sa device na ito — pati ang kasong nasa gitna. Huling save: ${save.savedAt ? esc(fmtTime(save.savedAt)) : '—'}.<br>Ngayon: ${esc(summary(save))}</p>
-      <h3>MGA SAVE SLOT</h3>${slotHTML}
-      <h3>ILIPAT SA IBANG DEVICE</h3>
-      <p class="note">Kopyahin ang <b>save code</b> at i-paste sa laro sa ibang phone o computer. O i-download/i-upload bilang file.</p>
-      <div class="coderow"><textarea id="code-out" readonly rows="3" aria-label="Save code"></textarea><div class="col"><button class="btn small gold" id="mk">GUMAWA NG CODE</button><button class="btn small dark" id="cp">KOPYAHIN</button><button class="btn small dark" id="dlf">I-DOWNLOAD</button></div></div>
-      <div class="coderow"><textarea id="code-in" rows="3" placeholder="I-paste dito ang save code (KASO1-...)" aria-label="I-paste ang save code"></textarea><div class="col"><button class="btn small primary" id="imp">I-LOAD ANG CODE</button><label class="btn small dark upl">I-UPLOAD FILE<input type="file" id="upf" accept=".txt,.json,.kaso" hidden></label></div></div>
+      <p class="note">✔ <b>Auto-save:</b> ${L('awtomatikong naka-save ang progreso mo sa device na ito — pati ang kasong nasa gitna. Huling save', 'your progress saves automatically on this device — including a case in progress. Last save')}: ${save.savedAt ? esc(fmtTime(save.savedAt)) : '—'}.<br>${L('Ngayon', 'Now')}: ${esc(summary(save))}</p>
+      <h3>${L('MGA SAVE SLOT', 'SAVE SLOTS')}</h3>${slotHTML}
+      <h3>${L('ILIPAT SA IBANG DEVICE', 'MOVE TO ANOTHER DEVICE')}</h3>
+      <p class="note">${L('Kopyahin ang <b>save code</b> at i-paste sa laro sa ibang phone o computer. O i-download/i-upload bilang file.', 'Copy the <b>save code</b> and paste it into the game on another phone or computer. Or download/upload it as a file.')}</p>
+      <div class="coderow"><textarea id="code-out" readonly rows="3" aria-label="Save code"></textarea><div class="col"><button class="btn small gold" id="mk">${L('GUMAWA NG CODE', 'MAKE CODE')}</button><button class="btn small dark" id="cp">${L('KOPYAHIN', 'COPY')}</button><button class="btn small dark" id="dlf">${L('I-DOWNLOAD', 'DOWNLOAD')}</button></div></div>
+      <div class="coderow"><textarea id="code-in" rows="3" placeholder="${L('I-paste dito ang save code (KASO1-...)', 'Paste the save code here (KASO1-...)')}" aria-label="${L('I-paste ang save code', 'Paste the save code')}"></textarea><div class="col"><button class="btn small primary" id="imp">${L('I-LOAD ANG CODE', 'LOAD CODE')}</button><label class="btn small dark upl">${L('I-UPLOAD FILE', 'UPLOAD FILE')}<input type="file" id="upf" accept=".txt,.json,.kaso" hidden></label></div></div>
     </div>`, 'wide');
     $$('[data-sv]', o).forEach((b) => tap(b, () => {
       const i = +b.dataset.sv, sl = getSlots();
-      const doIt = () => { sl[i] = { time: Date.now(), data: JSON.parse(JSON.stringify(save)) }; if (setSlots(sl)) { SFX.stamp(); toast(`Na-save sa Slot ${i + 1}.`); o.remove(); saveMenu(); } else toast('Hindi ma-save — puno o naka-block ang storage. Gamitin ang save code.'); };
-      if (sl[i]) confirmBox(`Palitan ang laman ng Slot ${i + 1}?`, doIt); else doIt();
+      const doIt = () => { sl[i] = { time: Date.now(), data: JSON.parse(JSON.stringify(save)) }; if (setSlots(sl)) { SFX.stamp(); toast(L(`Na-save sa Slot ${i + 1}.`, `Saved to Slot ${i + 1}.`)); o.remove(); saveMenu(); } else toast(L('Hindi ma-save — puno o naka-block ang storage. Gamitin ang save code.', "Can't save — storage is full or blocked. Use the save code.")); };
+      if (sl[i]) confirmBox(L(`Palitan ang laman ng Slot ${i + 1}?`, `Overwrite Slot ${i + 1}?`), doIt); else doIt();
     }));
-    $$('[data-ld]', o).forEach((b) => tap(b, () => { const i = +b.dataset.ld, sl = getSlots()[i]; if (!sl) return; confirmBox(`I-load ang Slot ${i + 1}? Papalitan ang kasalukuyang progreso.`, () => { o.remove(); applyLoaded(sl.data, `Na-load ang Slot ${i + 1}.`); }); }));
-    $$('[data-dl]', o).forEach((b) => tap(b, () => { const i = +b.dataset.dl; confirmBox(`Burahin ang Slot ${i + 1}?`, () => { const sl = getSlots(); sl[i] = null; setSlots(sl); o.remove(); saveMenu(); }); }));
+    $$('[data-ld]', o).forEach((b) => tap(b, () => { const i = +b.dataset.ld, sl = getSlots()[i]; if (!sl) return; confirmBox(L(`I-load ang Slot ${i + 1}? Papalitan ang kasalukuyang progreso.`, `Load Slot ${i + 1}? This replaces your current progress.`), () => { o.remove(); applyLoaded(sl.data, L(`Na-load ang Slot ${i + 1}.`, `Loaded Slot ${i + 1}.`)); }); }));
+    $$('[data-dl]', o).forEach((b) => tap(b, () => { const i = +b.dataset.dl; confirmBox(L(`Burahin ang Slot ${i + 1}?`, `Delete Slot ${i + 1}?`), () => { const sl = getSlots(); sl[i] = null; setSlots(sl); o.remove(); saveMenu(); }); }));
     const out = $('#code-out', o);
     tap($('#mk', o), () => { out.value = encodeSave(); out.select(); SFX.good(); });
     tap($('#cp', o), () => {
       if (!out.value) out.value = encodeSave();
       out.select();
-      try { navigator.clipboard.writeText(out.value).then(() => toast('Nakopya ang save code!'), () => toast('Piliin at kopyahin ang code nang mano-mano.')); } catch (e) { toast('Piliin at kopyahin ang code nang mano-mano.'); }
+      try { navigator.clipboard.writeText(out.value).then(() => toast(L('Nakopya ang save code!', 'Save code copied!')), () => toast(L('Piliin at kopyahin ang code nang mano-mano.', 'Select and copy the code by hand.'))); } catch (e) { toast(L('Piliin at kopyahin ang code nang mano-mano.', 'Select and copy the code by hand.')); }
     });
     tap($('#dlf', o), () => {
       try {
         const blob = new Blob([encodeSave()], { type: 'text/plain' }), a = document.createElement('a');
         a.href = URL.createObjectURL(blob); a.download = 'kaso-dilim-save.kaso'; document.body.appendChild(a); a.click(); a.remove();
-        toast('Kung walang nag-download, gamitin ang KOPYAHIN.');
-      } catch (e) { toast('Hindi ma-download dito. Gamitin ang KOPYAHIN.'); }
+        toast(L('Kung walang nag-download, gamitin ang KOPYAHIN.', 'If nothing downloaded, use COPY.'));
+      } catch (e) { toast(L('Hindi ma-download dito. Gamitin ang KOPYAHIN.', "Can't download here. Use COPY.")); }
     });
     tap($('#imp', o), () => {
-      try { const d = decodeSave($('#code-in', o).value); confirmBox('I-load ang save code? Papalitan ang kasalukuyang progreso.', () => { o.remove(); applyLoaded(d, 'Na-load ang save code!'); }); }
-      catch (e) { SFX.bad(); toast('Hindi wasto ang save code. Siguraduhing kumpleto ang kinopya (nagsisimula sa KASO1-).'); }
+      try { const d = decodeSave($('#code-in', o).value); confirmBox(L('I-load ang save code? Papalitan ang kasalukuyang progreso.', 'Load this save code? It replaces your current progress.'), () => { o.remove(); applyLoaded(d, L('Na-load ang save code!', 'Save code loaded!')); }); }
+      catch (e) { SFX.bad(); toast(L('Hindi wasto ang save code. Siguraduhing kumpleto ang kinopya (nagsisimula sa KASO1-).', 'That save code is not valid. Make sure you copied all of it (it starts with KASO1-).')); }
     });
     $('#upf', o).addEventListener('change', (e) => {
       const f = e.target.files && e.target.files[0]; if (!f) return;
       const rd = new FileReader();
-      rd.onload = () => { try { const d = decodeSave(rd.result); o.remove(); applyLoaded(d, 'Na-load ang save file!'); } catch (err) { SFX.bad(); toast('Hindi wastong save file.'); } };
+      rd.onload = () => { try { const d = decodeSave(rd.result); o.remove(); applyLoaded(d, L('Na-load ang save file!', 'Save file loaded!')); } catch (err) { SFX.bad(); toast(L('Hindi wastong save file.', 'That save file is not valid.')); } };
       rd.readAsText(f);
     });
   }
@@ -1206,7 +1226,7 @@
     if (!b) { b = document.createElement('button'); b.id = 'devbtn'; b.textContent = '🛠 DEV'; b.title = 'Developer panel'; document.body.appendChild(b); b.addEventListener('click', () => { SFX.init(); devPanel(); }); }
   }
   function devLogin() {
-    const o = el(`<div class="overlay"><form class="card" id="devf"><h2>DEVELOPER MODE 🔒</h2><p>Ilagay ang password.</p><input type="password" id="dev-pass" autocomplete="off" class="devpass" aria-label="Password"><p class="err" id="deverr" hidden>Maling password.</p><div class="row"><button class="btn primary" type="submit">PASOK</button><button class="btn dark" type="button" id="n">KANSELA</button></div></form></div>`);
+    const o = el(`<div class="overlay"><form class="card" id="devf"><h2>DEVELOPER MODE 🔒</h2><p>${L('Ilagay ang password.', 'Enter the password.')}</p><input type="password" id="dev-pass" autocomplete="off" class="devpass" aria-label="Password"><p class="err" id="deverr" hidden>${L('Maling password.', 'Wrong password.')}</p><div class="row"><button class="btn primary" type="submit">${L('PASOK', 'ENTER')}</button><button class="btn dark" type="button" id="n">${L('KANSELA', 'CANCEL')}</button></div></form></div>`);
     stage.appendChild(o);
     const inp = $('#dev-pass', o); setTimeout(() => inp.focus(), 50);
     $('#devf', o).addEventListener('submit', (e) => {

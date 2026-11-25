@@ -43,6 +43,12 @@ Iba pang features: zoom/pinch/pan sa paghahanap ng ebidensya, tutorial ni PO2 Je
 Bawat eksena ay may nakatagong palatandaan ni Ang Anino. Ipunin ang tatlo bawat kabanata at sagutin ang tanong sa corkboard para sa finale ng kabanata.
 Ang pera (₱) mula sa mga nalutas na kaso ay pambili ng desk items sa Tindahan ni Aling Sion.
 
+## Wika / Language
+
+Filipino ang default. Pindutin ang **ENGLISH** sa kanang itaas ng title screen, o sa **Settings ⚙ → Wika**, para sa buong English na bersyon (kuwento, komiks, interface). Naka-save ang pinili sa browser.
+
+Ang English na teksto ay nasa `js/lang-en1.js`, `js/lang-en2.js` at `js/lang-en3.js` — kapareho ng hugis ng data ng mga kaso, pero teksto lang. Ang mga salita ng interface ay nasa `js/game.js` bilang `L('Filipino', 'English')`.
+
 ## Save at Load
 
 - **Auto-save:** awtomatikong naka-save ang progreso sa browser — pati ang kasong nasa gitna (yugto, nahanap na ebidensya, oras, kape). Pindutin ang **ITULOY** sa title o **▶ ITULOY #00X** sa opisina.
@@ -65,6 +71,20 @@ Paalala: pang-testing lang ang password na ito. Nasa code ng laro ang pagsuri ni
 
 Kapag naka-host sa HTTPS (hal. GitHub Pages), puwedeng i-install ang laro: sa Chrome ng Android, menu → **Add to Home screen / Install app**. Gagana ito kahit offline. Tuwing may bagong release, palitan ang `VERSION` sa `sw.js` para makuha ng mga player ang update.
 
+## Paglabas (Release)
+
+**GitHub Pages (awtomatiko):** isang beses lang — sa GitHub, Settings → Pages → Source: **GitHub Actions**. Pagkatapos, bawat push sa `main` ay awtomatikong magde-deploy (`.github/workflows/pages.yml`). Puwede ring patakbuhin nang mano-mano sa tab na Actions.
+
+**itch.io / single file:**
+
+```bash
+python3 tools/build.py
+```
+
+Gagawa ito sa `dist/`:
+- `kaso-dilim-ng-maynila-web.zip` — i-upload sa itch.io bilang HTML5 game (Kind of project: HTML; i-check ang "This file will be played in the browser"; viewport 1280×720 o i-enable ang fullscreen button).
+- `kaso-dilim-ng-maynila.html` — iisang file na buong laro; buksan lang sa browser.
+
 ## Istruktura
 
 ```
@@ -76,6 +96,9 @@ js/cases.js       — data ng Kabanata 1: mga kaso, suspek, pahayag, ebidensya, 
 js/cases2.js      — data ng Kabanata 2, mga kabanata (CHAPTERS) at tindahan
 js/art3.js        — mga eksena ng Kabanata 3 + dawn background
 js/cases3.js      — data ng Kabanata 3, Huling Interogasyon (BOSS), ending at credits
+js/lang.js        — pinipili ang wika (tl / en)
+js/lang-en*.js    — English na teksto ng mga kaso at kuwento
+tools/build.py    — gumagawa ng itch.io zip at single-file na bersyon
 manifest.json     — PWA manifest (installable app)
 sw.js             — service worker para sa offline play
 js/audio.js       — sound effects (WebAudio, walang audio files)

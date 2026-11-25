@@ -443,3 +443,10 @@ body.portrait #rotate { display: flex; }
 .credits .cr b { display: block; font-family: var(--f-display); font-weight: 400; font-size: 44px; letter-spacing: 2px; color: var(--brass); }
 .credits .cr span { display: block; font-family: var(--f-type); font-size: 22px; color: var(--paper); margin-top: 6px; }
 @keyframes roll { to { transform: translateY(calc(-100% + 300px)); } }
+
+/* language switch on the title screen */
+.title .langsw { position: absolute; right: 24px; top: 20px; display: flex; gap: 8px; }
+
+/* English labels for CSS-generated text */
+html[lang="en"] .scard.sel::after { content: "SELECTED"; }
+html[lang="en"] .spotpanel.soco::after { content: "POLICE LINE · DO NOT CROSS · POLICE LINE"; }
