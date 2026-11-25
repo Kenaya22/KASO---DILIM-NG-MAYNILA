@@ -642,7 +642,7 @@
       const cl = c.clues[LAYOUT.sel]; if (!cl) return;
       x = Math.round(x); y = Math.round(y);
       if (p === pA && cl.alt) cl.alt[0] = [x, y]; else { cl.x = x; cl.y = y; }
-      ART.saveLayout(); SFX.tap(); investigate(c);
+      c._layoutEdited = true; ART.saveLayout(); SFX.tap(); investigate(c);
     }
     function layoutUI() {
       if (!LAYOUT.on) return;
@@ -660,8 +660,8 @@
         <small>Tap the RIGHT picture to place the selected clue.${cl.alt ? ' Tap the LEFT picture to place its "before" position.' : ''} Saved automatically in this browser — EXPORT to keep it in assets/art/layout.json.</small></div>`);
       s.appendChild(box);
       $('#lay-sel', box).addEventListener('change', (e) => { LAYOUT.sel = +e.target.value; investigate(c); });
-      tap($('#lay-m', box), () => { cl.r = Math.max(8, cl.r - 2); if (cl.w) cl.w = cl.r * 2.8; ART.saveLayout(); investigate(c); });
-      tap($('#lay-p', box), () => { cl.r += 2; if (cl.w) cl.w = cl.r * 2.8; ART.saveLayout(); investigate(c); });
+      tap($('#lay-m', box), () => { cl.r = Math.max(8, cl.r - 2); if (cl.w) cl.w = cl.r * 2.8; c._layoutEdited = true; ART.saveLayout(); investigate(c); });
+      tap($('#lay-p', box), () => { cl.r += 2; if (cl.w) cl.w = cl.r * 2.8; c._layoutEdited = true; ART.saveLayout(); investigate(c); });
       tap($('#lay-off', box), () => { LAYOUT.on = false; investigate(c); });
       tap($('#lay-r', box), () => confirmBox('Reset all clue positions to the built-in layout?', () => { ART.resetLayout(); location.reload(); }));
       tap($('#lay-x', box), () => {

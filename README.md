@@ -79,6 +79,19 @@ Puwedeng palitan ang mga guhit na gawa sa code ng sarili mong mga larawan. Buksa
 2. Patakbuhin ang `python3 tools/art_manifest.py` (o `--pixel` para sa pixel art).
 3. Para sa mga eksena: Developer Mode → kaso → EKSENA → **🎯 LAYOUT** → i-tap ang bawat clue sa tamang puwesto → EXPORT → i-save bilang `assets/art/layout.json`.
 
+**Mas mabilis: gawin gamit ang Gemini.** Kumuha ng API key sa https://aistudio.google.com/apikey, saka:
+
+```bash
+export GEMINI_API_KEY=iyong-key
+python3 tools/gemini_art.py --dry-run                     # tingnan muna kung ano ang gagawin
+python3 tools/gemini_art.py --group chars --required-only  # lahat ng base na karakter
+python3 tools/gemini_art.py                                # lahat ng kulang pa
+```
+
+Nilalaktawan nito ang mga larawang mayroon na, ginagamit ang base na larawan bilang reference ng mga ekspresyon at "after" na sprite, at ipinapadala ang `chars/mateo.png` bilang style reference para pare-pareho ang hitsura. May bayad ang Gemini API para sa larawan (tingnan ang presyo sa Google AI Studio).
+
+Ang eksena ng isang kaso ay lalabas lang kapag kumpleto na ang background AT ang lahat ng clue sprite nito; habang kulang pa, ang dating guhit ang gagamitin para hindi masira ang laro.
+
 Kung kulang pa ang isang larawan, ang dating guhit ang lalabas, kaya puwedeng gawin nang paisa-isang grupo. Para pare-pareho ang hitsura, tapusin ang isang buong grupo (hal. lahat ng karakter) bago i-commit.
 
 Bakit hiwalay ang background at ang mga clue: hindi kayang gumawa ng AI ng dalawang larawang eksaktong pareho maliban sa ilang bagay. Kaya isang malinis na background ang ginagamit, at ang laro mismo ang naglalagay ng "before" at "after" na clue sprites sa ibabaw.

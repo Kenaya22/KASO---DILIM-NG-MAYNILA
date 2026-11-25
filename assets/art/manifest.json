@@ -1,5 +1,13 @@
 {
  "pixel": false,
- "layout": false,
- "files": []
+ "layout": true,
+ "files": [
+  "chars/jessa.png",
+  "chars/mateo-angry.png",
+  "chars/mateo-point.png",
+  "chars/mateo-sad.png",
+  "chars/mateo-shock.png",
+  "chars/mateo.png",
+  "scenes/c1.png"
+ ]
 }

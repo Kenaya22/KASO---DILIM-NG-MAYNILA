@@ -16,7 +16,9 @@
   'use strict';
   const ART = window.ART, K = window.KASO;
   const IMG = {};
+  const ACTIVE = new Set(); // cases whose scene uses images (background + every clue sprite present)
   ART.IMG = IMG;
+  ART.sceneWaiting = [];
   Object.keys(K.CHARS).forEach((k) => { K.CHARS[k]._id = k; });
   let PIXEL = false;
 
@@ -33,7 +35,7 @@
   function applyLayout(lay) {
     if (!lay) return;
     K.CASES.forEach((c) => {
-      const L = lay[c.id]; if (!L) return;
+      const L = lay[c.id]; if (!L || !ACTIVE.has(c.id)) return;
       c.clues.forEach((cl) => {
         const v = L[cl.id]; if (!v) return;
         ['x', 'y', 'r', 'w'].forEach((k) => { if (typeof v[k] === 'number') cl[k] = v[k]; });
@@ -43,7 +45,7 @@
   }
   ART.layoutJSON = function () {
     const out = {};
-    K.CASES.forEach((c) => { out[c.id] = {}; c.clues.forEach((cl) => { const o = { x: Math.round(cl.x), y: Math.round(cl.y), r: Math.round(cl.r) }; if (cl.w) o.w = Math.round(cl.w); if (cl.alt) o.alt = cl.alt.map(([a, b]) => [Math.round(a), Math.round(b)]); out[c.id][cl.id] = o; }); });
+    K.CASES.forEach((c) => { if (!ACTIVE.has(c.id) && !c._layoutEdited) return; out[c.id] = {}; c.clues.forEach((cl) => { const o = { x: Math.round(cl.x), y: Math.round(cl.y), r: Math.round(cl.r) }; if (cl.w) o.w = Math.round(cl.w); if (cl.alt) o.alt = cl.alt.map(([a, b]) => [Math.round(a), Math.round(b)]); out[c.id][cl.id] = o; }); });
     return out;
   };
   ART.saveLayout = function () { try { localStorage.setItem(LKEY, JSON.stringify(ART.layoutJSON())); } catch (e) { /* ignore */ } };
@@ -83,6 +85,11 @@
   /* ---------- hook the renderers ---------- */
   function apply() {
     if (PIXEL) document.documentElement.classList.add('pixel-art');
+    const origPortrait = ART.portrait;
+    ART.portrait = function (c, expr, extra) {   // closer crop for illustrated characters
+      if (!(c && charImg(c._id, expr))) return origPortrait(c, expr, extra);
+      return `<svg viewBox="-19 -4 38 40" xmlns="http://www.w3.org/2000/svg" ${extra || ''}><g>${ART.figure(c, expr)}</g></svg>`;
+    };
     const origFigure = ART.figure;
     ART.figure = function (c, expr, pose) {
       const u = c && charImg(c._id, expr, pose);
@@ -92,6 +99,9 @@
     K.CASES.forEach((c) => {
       const bg = IMG[`scenes/${c.id}.png`];
       if (!bg) return;
+      const ready = c.clues.every((cl) => IMG[`clues/${c.id}-${cl.id}-before.png`] || IMG[`clues/${c.id}-${cl.id}-after.png`]);
+      if (!ready) { ART.sceneWaiting.push(c.id); return; } // keep the drawn scene until its clue sprites exist
+      ACTIVE.add(c.id);
       c._svgScene = c.scene;
       c.scene = function (after) {
         let s = `<image href="${bg}" x="0" y="0" width="600" height="400" preserveAspectRatio="xMidYMid slice"/>`;
@@ -122,9 +132,9 @@
       if (r.ok) { const m = await r.json(); list = m.files || []; PIXEL = !!m.pixel; hasLayout = !!m.layout; }
     } catch (e) { /* no manifest: built-in art only */ }
     if (hasLayout) { try { const r = await fetch('assets/art/layout.json', { cache: 'no-cache' }); if (r.ok) lay = await r.json(); } catch (e) { /* none */ } }
+    if (list.length) { await Promise.all(list.map(load)); apply(); }
     applyLayout(lay);
     try { applyLayout(JSON.parse(localStorage.getItem(LKEY) || 'null')); } catch (e) { /* ignore */ }
-    if (list.length) { await Promise.all(list.map(load)); apply(); }
     ART.artCount = Object.keys(IMG).length;
   })();
 })();
