@@ -10,6 +10,7 @@
   const L = (tl, en) => (EN ? en : tl);
   function setLang(l) { try { localStorage.setItem('kaso-lang', l); } catch (e) { /* ignore */ } location.reload(); }
   let SCALE = 1;
+  const LAYOUT = { on: false, sel: 0 };
   let cleanup = [];
 
   /* ---------------- SAVE ---------------- */
@@ -504,7 +505,7 @@
     SFX.music('tension'); persistRun('inv');
     const partner = c.partner || { c: 'jessa', name: 'PO2 JESSA DIMACULANGAN · SOCO' };
     const n = c.clues.length;
-    const extra = `<div class="hud-mid"><span class="objective">${L('HANAPIN', 'FIND')}: ${n}</span><div class="flipclock" id="clock"></div></div>${kapeHTML(run.kape)}<button class="hintbtn" id="zoom" title="Zoom">⊕ ZOOM</button><button class="hintbtn" id="hint" title="${L('Suriin (−1 kape)', 'Inspect (−1 coffee)')}">${LENS_SVG}${L('SURIIN', 'INSPECT')} −1☕</button><button class="iconbtn" id="pause" style="width:44px;height:44px;font-size:20px" title="Pause">❚❚</button>`;
+    const extra = `<div class="hud-mid"><span class="objective">${L('HANAPIN', 'FIND')}: ${n}</span><div class="flipclock" id="clock"></div></div>${kapeHTML(run.kape)}<button class="hintbtn" id="zoom" title="Zoom">⊕ ZOOM</button>${DEV.on ? '<button class="hintbtn" id="lay" title="Art layout tool">🎯 LAYOUT</button>' : ''}<button class="hintbtn" id="hint" title="${L('Suriin (−1 kape)', 'Inspect (−1 coffee)')}">${LENS_SVG}${L('SURIIN', 'INSPECT')} −1☕</button><button class="iconbtn" id="pause" style="width:44px;height:44px;font-size:20px" title="Pause">❚❚</button>`;
     const s = show(`<div class="screen inv">
       ${topbar(c, L('Yugto 3 · Hanapin ang Ebidensya', 'Phase 3 · Find the Evidence'), extra)}
       <div class="spotpanel cctv" id="pA" style="left:12px"><svg viewBox="0 0 600 400" preserveAspectRatio="none">${c.scene(false)}<g class="marks"></g></svg><div class="plabel"><span class="rec"></span>${esc(c.beforeLabel)}</div><div class="zoomtag" hidden></div></div>
@@ -527,7 +528,7 @@
     drawClock(); refreshKape();
     let paused = false, done = false;
     const iv = setInterval(() => {
-      if (paused || done) return;
+      if (paused || done || LAYOUT.on) return;
       if (!(DEV.on && DEV.infTime)) run.timeLeft--;
       drawClock();
       if (run.timeLeft % 5 === 0) persistRun();
@@ -567,6 +568,7 @@
     if (DEV.on && DEV.answers) c.clues.forEach((cl) => { if (!run.found.has(cl.id)) $('.marks', pB).insertAdjacentHTML('beforeend', `<circle class="dev-ans" cx="${cl.x}" cy="${cl.y}" r="${cl.r}"/>`); });
 
     function hit(p, e) {
+      if (LAYOUT.on) { const q = sceneXY(p, e.clientX, e.clientY); layoutTap(p, q.x, q.y); return; }
       if (paused || done) return;
       const { x, y } = sceneXY(p, e.clientX, e.clientY);
       const tol = 6 * (view.w / 600);
@@ -634,6 +636,41 @@
       p.addEventListener('wheel', (e) => { e.preventDefault(); const f = sceneXY(p, e.clientX, e.clientY); zoomAt(f.x, f.y, e.deltaY > 0 ? 1.2 : 1 / 1.2); }, { passive: false });
       p.style.touchAction = 'none';
     });
+
+    /* --- dev: art layout tool --- */
+    function layoutTap(p, x, y) {
+      const cl = c.clues[LAYOUT.sel]; if (!cl) return;
+      x = Math.round(x); y = Math.round(y);
+      if (p === pA && cl.alt) cl.alt[0] = [x, y]; else { cl.x = x; cl.y = y; }
+      ART.saveLayout(); SFX.tap(); investigate(c);
+    }
+    function layoutUI() {
+      if (!LAYOUT.on) return;
+      const cl = c.clues[LAYOUT.sel] || c.clues[0];
+      c.clues.forEach((q, i) => {
+        const on = i === LAYOUT.sel ? ' sel' : '';
+        $('.marks', pB).insertAdjacentHTML('beforeend', `<circle class="lay-ring${on}" cx="${q.x}" cy="${q.y}" r="${q.r}"/><text class="lay-txt" x="${q.x}" y="${q.y - q.r - 3}">${esc(q.id)}</text>`);
+        const [ax, ay] = q.alt && q.alt[0] ? q.alt[0] : [q.x, q.y];
+        $('.marks', pA).insertAdjacentHTML('beforeend', `<circle class="lay-ring${on}" cx="${ax}" cy="${ay}" r="${q.r}"/><text class="lay-txt" x="${ax}" y="${ay - q.r - 3}">${esc(q.id)}</text>`);
+      });
+      const box = el(`<div class="laybox"><b>🎯 LAYOUT</b><select id="lay-sel" aria-label="Clue">${c.clues.map((q, i) => `<option value="${i}" ${i === LAYOUT.sel ? 'selected' : ''}>${esc(q.id)}</option>`).join('')}</select>
+        <span>x ${Math.round(cl.x)} · y ${Math.round(cl.y)} · size ${Math.round(cl.r)}</span>
+        <button class="btn small dark" id="lay-m">−</button><button class="btn small dark" id="lay-p">+</button>
+        <button class="btn small gold" id="lay-x">EXPORT</button><button class="btn small dark" id="lay-r">RESET</button><button class="btn small primary" id="lay-off">CLOSE</button>
+        <small>Tap the RIGHT picture to place the selected clue.${cl.alt ? ' Tap the LEFT picture to place its "before" position.' : ''} Saved automatically in this browser — EXPORT to keep it in assets/art/layout.json.</small></div>`);
+      s.appendChild(box);
+      $('#lay-sel', box).addEventListener('change', (e) => { LAYOUT.sel = +e.target.value; investigate(c); });
+      tap($('#lay-m', box), () => { cl.r = Math.max(8, cl.r - 2); if (cl.w) cl.w = cl.r * 2.8; ART.saveLayout(); investigate(c); });
+      tap($('#lay-p', box), () => { cl.r += 2; if (cl.w) cl.w = cl.r * 2.8; ART.saveLayout(); investigate(c); });
+      tap($('#lay-off', box), () => { LAYOUT.on = false; investigate(c); });
+      tap($('#lay-r', box), () => confirmBox('Reset all clue positions to the built-in layout?', () => { ART.resetLayout(); location.reload(); }));
+      tap($('#lay-x', box), () => {
+        const m = modal('ART LAYOUT · EXPORT', `<p style="margin:0 0 8px">Save this text as <b>assets/art/layout.json</b> in the project, then commit it.</p><textarea id="lay-json" rows="16" style="width:100%;font-family:Courier New,monospace;font-size:12px" readonly>${esc(JSON.stringify(ART.layoutJSON()))}</textarea><div style="margin-top:8px"><button class="btn small gold" id="lay-cp">COPY</button></div>`, 'wide');
+        tap($('#lay-cp', m), () => { const t = $('#lay-json', m); t.select(); try { navigator.clipboard.writeText(t.value).then(() => toast('Copied.'), () => toast('Select and copy by hand.')); } catch (e2) { toast('Select and copy by hand.'); } });
+      });
+    }
+    if ($('#lay', s)) tap($('#lay', s), () => { LAYOUT.on = !LAYOUT.on; investigate(c); });
+    layoutUI();
 
     tap($('#hint', s), () => {
       if (run.kape <= 0 || done) return;
@@ -1318,5 +1355,5 @@
   /* ---------------- BOOT ---------------- */
   window.KASO_DEBUG = { get run() { return run; }, get save() { return save; }, startCase, desk, investigate, files, interrogate, corkboard, result, outline, award, bossFight, credits, saveMenu, devPanel, devLogin, encodeSave, decodeSave, resumeRun };
   devButton();
-  title();
+  (window.ART_READY || Promise.resolve()).then(title, title);
 })();

@@ -270,7 +270,7 @@
   }
 
   function portrait(c, expr, extra) {
-    return `<svg viewBox="-24 -6 48 50" xmlns="http://www.w3.org/2000/svg" ${extra || ''}><g>${figure(c, expr)}</g></svg>`;
+    return `<svg viewBox="-24 -6 48 50" xmlns="http://www.w3.org/2000/svg" ${extra || ''}><g>${window.ART.figure(c, expr)}</g></svg>`;
   }
 
   // Full-body lineup chart, viewBox 600x440. Shows 100cm..195cm.
@@ -291,7 +291,7 @@
       const sel = p.id === selId;
       s += `<g class="lu-fig${sel ? ' sel' : ''}" data-suspect="${p.id}" style="cursor:pointer">`;
       s += `<rect x="${cx - span / 2 + 4}" y="0" width="${span - 8}" height="${H}" fill="${sel ? 'rgba(63,208,201,.18)' : 'transparent'}"/>`;
-      s += `<g transform="translate(${cx.toFixed(1)},${y(p.h).toFixed(1)}) scale(${k.toFixed(3)})">${figure(p.look, sel ? 'nervous' : 'neutral')}</g>`;
+      s += `<g transform="translate(${cx.toFixed(1)},${y(p.h).toFixed(1)}) scale(${k.toFixed(3)})">${window.ART.figure(p.look, sel ? 'nervous' : 'neutral')}</g>`;
       s += `<g transform="translate(${cx.toFixed(1)},${H - 46})"><rect x="-58" y="0" width="116" height="38" rx="3" fill="#17110d" opacity=".92"/><text x="0" y="16" font-family="Oswald,Arial Narrow,sans-serif" font-size="15" font-weight="700" fill="#f6ecd2" text-anchor="middle">${p.name}</text><text x="0" y="31" font-family="Kalam,Comic Sans MS,sans-serif" font-size="11" fill="#e1b866" text-anchor="middle">${p.h} cm</text></g>`;
       s += `</g>`;
     });

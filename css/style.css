@@ -450,3 +450,14 @@ body.portrait #rotate { display: flex; }
 /* English labels for CSS-generated text */
 html[lang="en"] .scard.sel::after { content: "SELECTED"; }
 html[lang="en"] .spotpanel.soco::after { content: "POLICE LINE · DO NOT CROSS · POLICE LINE"; }
+
+/* illustrations */
+.pixel-art svg image { image-rendering: pixelated; }
+/* dev: art layout tool */
+.lay-ring { fill: rgba(255,59,255,.12); stroke: #ff3bff; stroke-width: 2; stroke-dasharray: 5 3; }
+.lay-ring.sel { stroke: #3bffef; stroke-width: 3; fill: rgba(59,255,239,.18); }
+.lay-txt { fill: #fff; font: 700 11px Oswald, Arial, sans-serif; text-anchor: middle; paint-order: stroke; stroke: #000; stroke-width: 3px; }
+.laybox { position: absolute; left: 12px; right: 12px; bottom: 8px; z-index: 30; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: #e9d3f0; color: var(--ink); border: 3px solid #b02ab0; padding: 8px 10px; font-family: var(--f-type); font-size: 15px; }
+.laybox b { font-family: var(--f-display); font-weight: 400; font-size: 18px; }
+.laybox select { font-size: 15px; padding: 4px; }
+.laybox small { flex-basis: 100%; font-size: 13px; }

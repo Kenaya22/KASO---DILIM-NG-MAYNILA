@@ -5,7 +5,7 @@ Usage:  python3 tools/build.py
 
 Creates in dist/:
   kaso-dilim-ng-maynila-web.zip  -> upload to itch.io as an HTML5 game (index.html is at the root of the zip)
-  kaso-dilim-ng-maynila.html     -> single self-contained file (open in any browser, works offline except Google Fonts)
+  kaso-dilim-ng-maynila.html     -> single self-contained file (built-in art only; open in any browser)
 """
 import base64
 import os
@@ -26,10 +26,19 @@ def script_list(html):
     return re.findall(r'<script src="(js/[^"]+)"></script>', html)
 
 
+def art_files():
+    out = []
+    base = os.path.join(ROOT, 'assets', 'art')
+    for dirpath, _, names in os.walk(base):
+        for n in names:
+            out.append(os.path.relpath(os.path.join(dirpath, n), ROOT))
+    return sorted(out)
+
+
 def build_zip(html):
     out = os.path.join(DIST, 'kaso-dilim-ng-maynila-web.zip')
     with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
-        for rel in FILES + script_list(html):
+        for rel in FILES + script_list(html) + art_files():
             z.write(os.path.join(ROOT, rel), rel)
     return out
 
@@ -51,6 +60,7 @@ def build_single(html):
 
 if __name__ == '__main__':
     os.makedirs(DIST, exist_ok=True)
+    os.system('python3 "%s"' % os.path.join(ROOT, 'tools', 'art_manifest.py'))
     page = read('index.html')
     for path in (build_zip(page), build_single(page)):
         print('%-60s %8.1f KB' % (os.path.relpath(path, ROOT), os.path.getsize(path) / 1024))

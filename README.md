@@ -71,6 +71,18 @@ Paalala: pang-testing lang ang password na ito. Nasa code ng laro ang pagsuri ni
 
 Kapag naka-host sa HTTPS (hal. GitHub Pages), puwedeng i-install ang laro: sa Chrome ng Android, menu → **Add to Home screen / Install app**. Gagana ito kahit offline. Tuwing may bagong release, palitan ang `VERSION` sa `sw.js` para makuha ng mga player ang update.
 
+## Mga Larawan (Illustrations)
+
+Puwedeng palitan ang mga guhit na gawa sa code ng sarili mong mga larawan. Buksan ang **`docs/art-prompts.html`** sa browser: nandoon ang lahat ng prompt (237), ang eksaktong pangalan ng file, at isang style switch (Komiks/webtoon o Pixel art).
+
+1. Gumawa ng larawan gamit ang prompt, at i-save sa `assets/art/` gamit ang eksaktong pangalan (hal. `assets/art/chars/kanor.png`).
+2. Patakbuhin ang `python3 tools/art_manifest.py` (o `--pixel` para sa pixel art).
+3. Para sa mga eksena: Developer Mode → kaso → EKSENA → **🎯 LAYOUT** → i-tap ang bawat clue sa tamang puwesto → EXPORT → i-save bilang `assets/art/layout.json`.
+
+Kung kulang pa ang isang larawan, ang dating guhit ang lalabas, kaya puwedeng gawin nang paisa-isang grupo. Para pare-pareho ang hitsura, tapusin ang isang buong grupo (hal. lahat ng karakter) bago i-commit.
+
+Bakit hiwalay ang background at ang mga clue: hindi kayang gumawa ng AI ng dalawang larawang eksaktong pareho maliban sa ilang bagay. Kaya isang malinis na background ang ginagamit, at ang laro mismo ang naglalagay ng "before" at "after" na clue sprites sa ibabaw.
+
 ## Paglabas (Release)
 
 **GitHub Pages (awtomatiko):** isang beses lang — sa GitHub, Settings → Pages → Source: **GitHub Actions**. Pagkatapos, bawat push sa `main` ay awtomatikong magde-deploy (`.github/workflows/pages.yml`). Puwede ring patakbuhin nang mano-mano sa tab na Actions.

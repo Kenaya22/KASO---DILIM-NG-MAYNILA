@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kaso Art Prompt Pack</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Special+Elite&family=Inter:wght@400;600;700&display=swap">
+<style>
+/* Layout: one column; a sticky control bar, then prompt cards grouped by type. Single dark noir look, matching the game. */
+:root {
+  --bg: #15110e; --panel: #221a14; --paper: #f6ecd2; --ink: #17110d; --muted: #b9a888;
+  --brass: #e1b866; --blood: #c0303a; --line: #3a2d22; --ok: #59b36a;
+  --f-display: 'Anton', Impact, 'Arial Narrow', sans-serif;
+  --f-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-type: 'Special Elite', 'Courier New', monospace;
+  --f-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--paper); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 60px; }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 6vw, 56px); letter-spacing: 1px; margin: 0; line-height: 1; text-wrap: balance; }
+h1 span { color: var(--brass); }
+.lede { color: var(--muted); max-width: 68ch; margin: 10px 0 0; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 22px 0 8px; padding: 0; list-style: none; counter-reset: s; }
+.steps li { counter-increment: s; background: var(--panel); border: 1px solid var(--line); padding: 12px 14px 12px 46px; position: relative; font-size: 14px; min-width: 0; }
+.steps li::before { content: counter(s); position: absolute; left: 12px; top: 10px; font-family: var(--f-display); font-size: 24px; color: var(--brass); }
+.steps code, .card code { font-family: var(--f-mono); font-size: 12.5px; background: #0d0a08; padding: 1px 5px; border-radius: 3px; overflow-wrap: anywhere; }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: rgba(21,17,14,.96); border-bottom: 1px solid var(--line); padding: 10px 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 18px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg button { background: transparent; color: var(--paper); border: 0; padding: 7px 12px; font: 600 13px var(--f-body); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--brass); color: var(--ink); }
+.bar input[type=search] { flex: 1 1 180px; min-width: 0; background: #0d0a08; border: 1px solid var(--line); color: var(--paper); padding: 7px 10px; border-radius: 4px; font: 14px var(--f-body); }
+.count { font-family: var(--f-type); color: var(--muted); font-size: 14px; white-space: nowrap; }
+.count b { color: var(--ok); font-weight: 400; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+h2 { font-family: var(--f-display); font-weight: 400; font-size: 28px; letter-spacing: .5px; margin: 34px 0 4px; }
+h2 small { font-family: var(--f-type); font-size: 14px; color: var(--muted); letter-spacing: 0; margin-left: 8px; }
+.gnote { color: var(--muted); margin: 0 0 12px; max-width: 75ch; font-size: 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--line); margin: 10px 0; padding: 12px 14px; }
+.card.req { border-left-color: var(--blood); }
+.card.done { opacity: .55; border-left-color: var(--ok); }
+.head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.file { font-family: var(--f-mono); font-size: 14px; color: var(--brass); overflow-wrap: anywhere; min-width: 0; }
+.tag { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; background: #0d0a08; color: var(--muted); }
+.tag.req { background: var(--blood); color: #fff; }
+.who { font-weight: 600; }
+.sp { flex: 1; }
+.card label { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); cursor: pointer; }
+.card input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--ok); }
+.copy { background: var(--brass); color: var(--ink); border: 0; padding: 6px 12px; border-radius: 4px; font: 700 13px var(--f-body); cursor: pointer; }
+.copy.ok { background: var(--ok); color: #fff; }
+pre { margin: 10px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--f-mono); font-size: 13px; line-height: 1.5; color: #e9dcc0; background: #0d0a08; padding: 10px 12px; border-radius: 4px; max-height: 260px; overflow: auto; }
+.empty { color: var(--muted); font-family: var(--f-type); padding: 30px 0; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <h1>KASO <span>·</span> ART PROMPT PACK</h1>
+  <p class="lede">Every image the game can use, with a ready prompt and the exact file name. Images you add replace the built-in drawings; anything still missing keeps the current art, so you can work group by group. Do a whole group (for example all characters) before switching it on, so the look stays consistent.</p>
+  <ol class="steps">
+    <li>Pick a style below. Generate the <b>Required</b> image of each character first, then use it as the reference image for its optional expressions.</li>
+    <li>Save each image with the exact name into the folder shown, inside <code>assets/art/</code> (for example <code>assets/art/chars/kanor.png</code>).</li>
+    <li>Run <code>python3 tools/art_manifest.py</code> (add <code>--pixel</code> for pixel art) so the game sees the new files.</li>
+    <li>Scenes: open Developer Mode → case → EKSENA → <b>🎯 LAYOUT</b>, tap each clue onto its spot, then EXPORT and save as <code>assets/art/layout.json</code>.</li>
+  </ol>
+  <div class="bar" role="toolbar" aria-label="Filters">
+    <span class="seg" id="style" aria-label="Art style"><button data-v="komiks" aria-pressed="true">Komiks / webtoon</button><button data-v="pixel" aria-pressed="false">Pixel art</button></span>
+    <span class="seg" id="grp" aria-label="Group"><button data-v="all" aria-pressed="true">All</button><button data-v="chars" aria-pressed="false">Characters</button><button data-v="scenes" aria-pressed="false">Scenes</button><button data-v="clues" aria-pressed="false">Clue sprites</button><button data-v="bg" aria-pressed="false">Backgrounds</button></span>
+    <span class="seg" id="req" aria-label="Priority"><button data-v="all" aria-pressed="true">All</button><button data-v="req" aria-pressed="false">Required only</button></span>
+    <input type="search" id="q" placeholder="Search a name, case or file…" aria-label="Search">
+    <span class="count" id="count"></span>
+  </div>
+  <div id="list"></div>
+</div>
+
+<script>
+const GAME = {"chars":["mateo","jessa","tatay","anino","carmen","turing","gloria","kanor","lorna","marco","ben","totoy","pido","nena","dado","lyka","junjun","sy","bong","dizon","celso","rosing","brojun","isko","velasco","henry","bebot","tess","pedring","chua","bert","gorio","bianca","lito","santi","medina","nards","ambo","nympha","jake","dante","lino","perla","ricky","mercado","gener","paolo","marga","lorie"],"cases":[{"id":"c1","num":"001","title":"Lihim sa Ilalim ng Tulay","chapter":1,"suspects":["kanor","lorna","marco","ben"],"victim":"carmen","clues":[{"id":"boot","x":318,"y":370,"r":24,"alt":null,"meta":false,"thumbBefore":false},{"id":"fabric","x":360,"y":293,"r":22,"alt":null,"meta":false,"thumbBefore":false},{"id":"clock","x":337,"y":250,"r":24,"alt":null,"meta":false,"thumbBefore":false},{"id":"key","x":272,"y":258,"r":24,"alt":null,"meta":false,"thumbBefore":true},{"id":"mirror","x":404,"y":262,"r":22,"alt":null,"meta":false,"thumbBefore":false},{"id":"ticket","x":456,"y":270,"r":24,"alt":null,"meta":true,"thumbBefore":false}]},{"id":"c2","num":"002","title":"Ang Nawawalang Boundary","chapter":1,"suspects":["totoy","pido","nena","dado"],"victim":"turing","clues":[{"id":"sign","x":185,"y":182,"r":28,"alt":null,"meta":false,"thumbBefore":false},{"id":"cashbox","x":566,"y":292,"r":22,"alt":null,"meta":false,"thumbBefore":true},{"id":"hand","x":465,"y":282,"r":20,"alt":null,"meta":false,"thumbBefore":false},{"id":"toolbox","x":305,"y":334,"r":22,"alt":null,"meta":false,"thumbBefore":false},{"id":"wrench","x":300,"y":377,"r":22,"alt":null,"meta":false,"thumbBefore":false},{"id":"basket","x":62,"y":352,"r":28,"alt":null,"meta":false,"thumbBefore":false},{"id":"anting","x":211,"y":376,"r":22,"alt":null,"meta":true,"thumbBefore":false}]},{"id":"c3","num":"003","title":"Huling Kanta sa Bituin KTV","chapter":1,"suspects":["lyka","junjun","sy","bong"],"victim":"gloria","clues":[{"id":"tv","x":186,"y":145,"r":46,"alt":null,"meta":false,"thumbBefore":false},{"id":"glass","x":250,"y":296,"r":20,"alt":null,"meta":false,"thumbBefore":false},{"id":"ledger","x":416,"y":307,"r":22,"alt":null,"meta":false,"thumbBefore":true},{"id":"mic","x":92,"y":372,"r":22,"alt":[[452,316]],"meta":false,"thumbBefore":false},{"id":"cufflink","x":300,"y":382,"r":20,"alt":null,"meta":false,"thumbBefore":false},{"id":"matchbook","x":198,"y":322,"r":20,"alt":null,"meta":true,"thumbBefore":false}]},{"id":"c4","num":"004","title":"Ang Gintong Anting-anting","chapter":2,"suspects":["rosing","brojun","isko","velasco"],"victim":"celso","clues":[{"id":"amulet","x":476,"y":243,"r":22,"alt":null,"meta":false,"thumbBefore":true},{"id":"kandelero","x":296,"y":368,"r":26,"alt":[[404,280]],"meta":false,"thumbBefore":false},{"id":"lens","x":232,"y":358,"r":20,"alt":null,"meta":false,"thumbBefore":false},{"id":"tin","x":524,"y":294,"r":24,"alt":null,"meta":false,"thumbBefore":false},{"id":"resibo","x":150,"y":380,"r":22,"alt":null,"meta":false,"thumbBefore":false},{"id":"radio","x":560,"y":378,"r":22,"alt":null,"meta":true,"thumbBefore":false}]},{"id":"c5","num":"005","title":"Apoy sa Bodega","chapter":2,"suspects":["bebot","tess","pedring","chua"],"victim":"henry","clues":[{"id":"apoy","x":115,"y":262,"r":40,"alt":null,"meta":false,"thumbBefore":false},{"id":"extinguisher","x":331,"y":199,"r":24,"alt":null,"meta":false,"thumbBefore":true},{"id":"bintana","x":472,"y":117,"r":34,"alt":null,"meta":false,"thumbBefore":false},{"id":"gasolina","x":302,"y":356,"r":26,"alt":null,"meta":false,"thumbBefore":false},{"id":"lighter","x":200,"y":382,"r":20,"alt":null,"meta":false,"thumbBefore":false},{"id":"susi","x":522,"y":372,"r":22,"alt":null,"meta":false,"thumbBefore":false},{"id":"roster","x":430,"y":352,"r":22,"alt":null,"meta":true,"thumbBefore":false}]},{"id":"c6","num":"006","title":"Mga Pader ng Intramuros","chapter":2,"suspects":["gorio","bianca","lito","santi"],"victim":"bert","clues":[{"id":"padlock","x":115,"y":248,"r":24,"alt":null,"meta":false,"thumbBefore":false},{"id":"ilaw","x":230,"y":150,"r":26,"alt":null,"meta":false,"thumbBefore":false},{"id":"flashlight","x":398,"y":372,"r":24,"alt":null,"meta":false,"thumbBefore":false},{"id":"batuta","x":488,"y":352,"r":26,"alt":null,"meta":false,"thumbBefore":false},{"id":"sulat","x":290,"y":384,"r":18,"alt":null,"meta":false,"thumbBefore":false},{"id":"litrato","x":562,"y":376,"r":24,"alt":null,"meta":true,"thumbBefore":false}]},{"id":"c7","num":"007","title":"Ang Huling Biyahe","chapter":3,"suspects":["ambo","nympha","jake","dante"],"victim":"dizon","clues":[{"id":"briefcase","x":330,"y":340,"r":28,"alt":null,"meta":false,"thumbBefore":true},{"id":"tubo","x":462,"y":370,"r":26,"alt":null,"meta":false,"thumbBefore":false},{"id":"earpiece","x":250,"y":382,"r":20,"alt":null,"meta":false,"thumbBefore":false},{"id":"card","x":140,"y":372,"r":20,"alt":null,"meta":false,"thumbBefore":false},{"id":"lubid","x":212,"y":318,"r":28,"alt":null,"meta":false,"thumbBefore":false},{"id":"selyo","x":545,"y":376,"r":24,"alt":null,"meta":true,"thumbBefore":false}]},{"id":"c8","num":"008","title":"Ang Imprenta ng Escolta","chapter":3,"suspects":["perla","ricky","mercado","gener"],"victim":"lino","clues":[{"id":"negatives","x":420,"y":108,"r":34,"alt":null,"meta":false,"thumbBefore":true},{"id":"artikulo","x":110,"y":258,"r":28,"alt":null,"meta":false,"thumbBefore":false},{"id":"hagdan","x":528,"y":252,"r":28,"alt":null,"meta":false,"thumbBefore":false},{"id":"tinta","x":380,"y":372,"r":30,"alt":null,"meta":false,"thumbBefore":false},{"id":"lenscap","x":212,"y":382,"r":20,"alt":null,"meta":false,"thumbBefore":false},{"id":"diyaryo","x":90,"y":378,"r":22,"alt":null,"meta":true,"thumbBefore":false}]},{"id":"c9","num":"009","title":"Gala para sa Maynila","chapter":3,"suspects":["paolo","marga","mercado","lorie"],"victim":"jessa","clues":[{"id":"glass","x":388,"y":312,"r":24,"alt":null,"meta":false,"thumbBefore":false},{"id":"vial","x":306,"y":288,"r":18,"alt":null,"meta":false,"thumbBefore":false},{"id":"glove","x":180,"y":380,"r":24,"alt":null,"meta":false,"thumbBefore":false},{"id":"speechcard","x":512,"y":262,"r":22,"alt":null,"meta":false,"thumbBefore":false},{"id":"phone","x":430,"y":380,"r":22,"alt":null,"meta":false,"thumbBefore":false},{"id":"singsing","x":468,"y":184,"r":20,"alt":null,"meta":true,"thumbBefore":false}]}]};
+
+/* ---------------- styles ---------------- */
+const GREEN = 'The background is one flat solid colour, pure green #00FF00, filling every pixel that is not the subject: no floor, no shadow, no frame, no text, no watermark. Do not use any green colour in the subject itself.';
+const STYLES = {
+  komiks: {
+    look: 'Style: original Filipino komiks / webtoon noir illustration. Bold clean ink outlines in dark brown-black (#17110d), flat cel shading with 2 tones per colour, light from the top-left, muted warm noir palette (sepia, navy, deep red, mustard, cream), slightly stylized proportions, simple readable shapes. NO photorealism, NO blur, NO glow on the subject, NO gradients on the subject, NO text, NO letters, NO watermark, NO signature.',
+    char: 'Tall portrait canvas 2:3 (1024x1536). Full body, FRONT view, standing straight and facing the viewer, arms relaxed at the sides, the whole figure visible from the top of the head to the shoes. Top of the head about 4% below the top edge, shoes touching the bottom edge, centered. The head is about one sixth of the total height.',
+    scene: 'Wide background 3:2 (1536x1024). Straight-on, eye-level view like a stage set, no people. Rainy-night neon glow and atmosphere are fine in backgrounds; keep the area around objects clean and readable.',
+    sprite: 'Single object sprite, square 1:1 (512x512). The object is centered and fills about 75% of the frame, seen from a slight top-down three-quarter angle, as it would look inside a scene viewed at eye level.',
+    desk: 'Wide background 16:9 (1920x1080). Straight-on, eye-level view, no people.'
+  },
+  pixel: {
+    look: 'Style: clean 16-bit retro pixel art for a Filipino noir detective game, crisp square pixels, maximum 32 colours, a solid 1-pixel dark outline (#17110d) around every shape, flat 2–3 tone shading with light from the top-left, muted warm noir palette (sepia, navy, deep red, mustard, cream). NO anti-aliasing, NO blur, NO glow, NO gradients, NO soft edges, NO text, NO letters, NO watermark.',
+    char: 'Tall canvas 2:3 (768x1152). Draw it at only 96x144 pixels and scale it up 8x with nearest-neighbour, so every art pixel is a crisp 8x8 block. Full body, FRONT view, standing straight and facing the viewer, arms relaxed at the sides, from the top of the head to the shoes; top of the head near the top edge, shoes touching the bottom edge, centered.',
+    scene: 'Wide background 3:2 (1440x960). Draw it at only 240x160 pixels and scale it up 6x with nearest-neighbour. Straight-on, eye-level view like a stage set, no people.',
+    sprite: 'Single object sprite, square 1:1 (480x480). Draw it at only 48x48 pixels and scale it up 10x with nearest-neighbour. The object is centered and fills about 75% of the frame, seen from a slight top-down three-quarter angle.',
+    desk: 'Wide background 16:9 (1920x1080). Draw it at only 320x180 pixels and scale it up 6x with nearest-neighbour. Straight-on, eye-level view, no people.'
+  }
+};
+const EXPR = {
+  neutral: 'Expression: calm and neutral, mouth closed.',
+  shock: 'Expression: shocked — eyes wide, eyebrows raised, mouth open, one bead of sweat on the forehead.',
+  angry: 'Expression: angry — frowning, eyebrows pulled down, teeth clenched.',
+  sad: 'Expression: sad — eyes closed, eyebrows tilted up, small frown.',
+  point: 'Pose: shouting with the mouth open and determined eyes, the RIGHT arm extended straight forward pointing at the viewer.'
+};
+
+/* ---------------- characters ---------------- */
+const MAIN = ['mateo', 'jessa', 'nards', 'tatay', 'dizon', 'medina'];
+const CH = {
+  mateo: 'Inspector Mateo Reyes, the hero: Filipino police detective, early 30s, lean, tan skin, messy wavy black hair, light stubble, square jaw, sharp determined dark eyes; cream embroidered barong-style shirt with sleeves rolled to the elbows, dark trousers, brown shoes, a police badge clipped to his belt.',
+  jessa: 'PO2 Jessa Dimaculangan, his partner: Filipina crime-scene (SOCO) officer, late 20s, warm tan skin, black hair in a high ponytail, black rectangular glasses; navy blue vest with yellow trim over a white long-sleeve shirt, dark trousers, sneakers, latex gloves sticking out of a vest pocket.',
+  nards: 'SPO1 Nards Bautista: Filipino SOCO officer, 40s, brown skin, buzz cut, stubble, square jaw, sturdy build; navy blue vest with yellow trim over a white shirt, dark trousers.',
+  tatay: "SPO4 Ernesto Reyes, Mateo's late father (shown as in an old photo): Filipino policeman in his 50s, brown skin, short greying hair, grey mustache, forehead wrinkles, square jaw; dark navy police uniform, peaked police cap with a gold badge.",
+  anino: '"Ang Anino" (The Shadow), the hidden villain: a tall man entirely in shadow, long black trench coat and black fedora, no visible face except two thin glowing red eyes; pure black silhouette with only a faint dark red rim light.',
+  carmen: 'Donya Carmen Villareal, victim: wealthy Filipina pawnshop owner, 60s, fair skin, grey hair in a neat bun, pearl earrings, red lipstick, elegant purple blouse, dark skirt.',
+  turing: 'Mang Turing Salvador, victim: Filipino jeepney operator, 60s, brown skin, bald with grey sides, grey mustache, wrinkles; khaki t-shirt, faded jeans, rubber slippers.',
+  gloria: 'Madam Gloria Tan, victim: Filipina-Chinese karaoke bar owner, 50s, fair skin, long auburn hair, gold earrings, red lipstick, black sequined dress.',
+  kanor: 'Mang Kanor, suspect: Filipino night security guard, 50s, heavyset, brown skin, square jaw, thick black mustache; navy blue security guard uniform with a gold badge and round shoulder patch, navy peaked cap, the RIGHT sleeve visibly torn, heavy black boots.',
+  lorna: 'Ate Lorna, suspect: Filipina street-food (carinderia) vendor, 40s, short and stout, tan skin, dark hair in a bun, gold earrings; red blouse under a white striped apron, rubber slippers.',
+  marco: "Sir Marco, suspect: the victim's nephew and heir, 30s, fair skin, slicked-back black hair, thin glasses, slightly arrogant look; blue polo shirt, beige chinos, wristwatch, loafers.",
+  ben: 'Kuya Ben, suspect: Filipino family driver, 40s, dark brown skin, short black hair, stubble; red baseball cap, olive green jacket over a white shirt, dark trousers.',
+  totoy: 'Totoy, suspect: Filipino jeepney terminal barker, 20s, thin, brown skin, buzz cut, energetic; orange reflective safety vest over a dark grey t-shirt, jeans, slippers.',
+  pido: 'Mang Pido, suspect: Filipino jeepney driver, 50s, weathered brown skin, short greying hair, mustache; white sando tank top, a small towel over one shoulder, black engine grease under his fingernails, blue jeans.',
+  nena: 'Aling Nena, suspect: Filipina balut street vendor, 40s, small, tan skin, long black hair, yellow bandana, green blouse, gold earrings.',
+  dado: "Sir Dado, suspect: rival jeepney operator, 50s, heavyset, tan skin, slicked hair, dark sunglasses; maroon polo shirt, thick gold neck chain.",
+  lyka: 'Lyka, suspect: Filipina karaoke bar singer, mid-20s, light skin, long auburn-brown hair, small beauty mark on the cheek, red lipstick, gold earrings; sparkly pink sequined top, black skirt.',
+  junjun: 'Jun-jun, suspect: Filipino karaoke bar waiter, early 20s, tan skin, short black hair; white shirt, black vest, red bow tie, black trousers.',
+  sy: 'Mr. Albert Sy, suspect: Filipino-Chinese accountant, 40s, fair skin, slicked black hair, glasses; charcoal grey suit, maroon tie, ONE gold cufflink on the right sleeve only (the left one is missing).',
+  bong: "Kuya Bong, suspect: the victim's ex-husband, 50s, brown skin, curly black hair, stubble; black jacket over a beige shirt.",
+  dizon: 'Captain Rodel Dizon: Filipino police captain, 50s, heavyset, tan skin, short greying hair, grey mustache, square jaw, smug confident face; dark navy police uniform with gold insignia, peaked police cap.',
+  celso: 'Mang Celso, victim: elderly Quiapo amulet vendor, 70s, brown skin, bald, grey mustache, deep wrinkles; brown polo shirt.',
+  rosing: 'Aling Rosing, suspect: Quiapo candle vendor, 60s, brown skin, curly grey hair, purple blouse, earrings.',
+  brojun: 'Brother Jun, suspect: church sacristan, 30s, light tan skin, short black hair, glasses, gentle face; plain white shirt, wooden rosary around the neck.',
+  isko: 'Mang Isko, suspect: street fortune-teller, 40s, brown skin, stubble, purple bandana; brown jacket over a mustard shirt, a small deck of tarot cards in one hand.',
+  velasco: 'Dr. Velasco, suspect: wealthy antique collector, 60s, fair skin, slicked grey hair, grey mustache, gold-rimmed glasses with the LEFT lens cracked; brown three-piece suit, green tie.',
+  henry: 'Mr. Henry Go, victim: fabric warehouse owner, 50s, fair skin, slicked black hair, glasses; beige polo shirt.',
+  bebot: 'Bebot, suspect: Divisoria porter, 30s, muscular, dark brown skin, buzz cut; white sando tank top, a towel on one shoulder, dark trousers.',
+  tess: 'Aling Tess, suspect: carinderia vendor, 40s, tan skin, black hair in a ponytail, earrings; teal blouse under a white apron.',
+  pedring: 'Ka Pedring, suspect: elderly night guard, 60s, brown skin, grey hair and grey mustache; khaki-olive security uniform and matching cap.',
+  chua: 'Mr. William Chua, suspect: Filipino-Chinese businessman, 50s, big build, fair skin, slicked black hair, glasses; navy polo shirt, gold neck chain, a silver lighter in his hand.',
+  bert: "SPO3 Bert Manalastas (retired), victim: Mateo's father's old partner, 60s, brown skin, short grey hair, grey mustache, wrinkles; slate blue polo shirt.",
+  gorio: 'Mang Gorio, suspect: calesa (horse carriage) driver, 40s, brown skin, stubble; green cap, khaki t-shirt.',
+  bianca: 'Ms. Bianca, suspect: Intramuros ghost-tour guide, late 20s, light skin, long black hair, red lipstick, earrings; red jacket over a white top, holding an old lantern.',
+  lito: 'Lito "Payat", suspect: skinny Filipino fishball vendor, 20s, brown skin, buzz cut; mustard yellow t-shirt, blue jeans.',
+  santi: 'Ka Santi, suspect: Fort Santiago night guard, 40s, tall, brown skin, stubble, square jaw; dark olive security uniform and cap, a black nightstick on his belt.',
+  medina: 'Councilor Arturo Medina, the final villain: Filipino city councilor, 60s, fair-tan skin, slicked grey hair, grey mustache, square jaw, polished politician smile; elegant cream barong tagalog, a gold ring with a black crow emblem on his right hand.',
+  ambo: 'Mang Ambo, suspect: Pasig River ferry boatman, 60s, dark brown skin, grey mustache; yellow cap, blue t-shirt.',
+  nympha: 'Nympha, suspect: ferry ticket booth cashier, 30s, light tan skin, hair in a bun, glasses, earrings; blue blouse.',
+  jake: 'Jake "Bangka", suspect: boat-for-hire man, 30s, brown skin, curly black hair, stubble; mustard yellow sando tank top, shorts.',
+  dante: "Dante Cruz, suspect: the councilor's bodyguard, 40s, very tall and broad, brown skin, buzz cut, black sunglasses; black suit, black tie, a coiled security earpiece.",
+  lino: 'Ka Lino Pascual, victim: veteran Filipino journalist, 60s, tan skin, short grey hair, glasses, stubble; brown polo shirt, a press ID on a lanyard.',
+  perla: 'Aling Perla, suspect: printing press owner, 60s, tan skin, curly brown hair, earrings; purple blouse under an ink-stained apron.',
+  ricky: 'Ricky, suspect: young printing apprentice, late teens, brown skin, messy hair; red t-shirt, ink-smudged hands.',
+  mercado: 'Atty. Amado Mercado, suspect: lawyer, 50s, fair skin, slicked dark hair, glasses; navy suit, gold tie, a leather briefcase.',
+  gener: 'Gener, suspect: campaign photographer, 30s, tan skin, stubble, black cap; olive jacket over a black shirt, a professional camera around his neck WITHOUT a lens cap.',
+  paolo: 'Paolo, suspect: hotel waiter, 20s, tan skin, short hair; white shirt, black vest, black bow tie, holding a silver tray.',
+  marga: 'Chef Marga, suspect: head chef, 30s, light skin, ponytail, earrings; white chef jacket and white apron.',
+  lorie: "Ms. Lorie Vidal, suspect: the councilor's executive secretary, 30s, fair skin, black hair in a tight bun, small beauty mark, red lipstick; black dress, ONE long white silk glove on her left hand only."
+};
+function variantsOf(id) {
+  if (id === 'anino') return ['neutral'];
+  if (id === 'mateo') return ['neutral', 'shock', 'angry', 'sad', 'point'];
+  if (MAIN.includes(id)) return ['neutral', 'shock', 'angry', 'sad'];
+  if (GAME.cases.some((c) => c.victim === id)) return ['neutral', 'sad'];
+  return ['neutral', 'shock', 'angry'];
+}
+function caseOfChar(id) { const c = GAME.cases.find((x) => x.suspects.includes(id) || x.victim === id); return c ? `Case #${c.num}` : 'Main cast'; }
+
+/* ---------------- scenes ---------------- */
+const SC = {
+  c1: { d: 'Manila at night in heavy rain. Top half: the old stone Jones Bridge with three wide arches and ornate lamp posts glowing warm yellow, Binondo buildings with lit windows behind it, one pink and one cyan neon sign (no readable text). Middle band: the dark Pasig River with lamp reflections. Bottom third: wet black asphalt with puddles. A maroon 1980s four-door sedan parked side-on, FACING RIGHT, centered (about 18%–82% of the width, 54%–85% of the height); its windows show a dark interior with an empty back seat and a dark dashboard. A tall black street lamp on the far right casts a cone of light.', no: 'a side mirror on the car, any paper on the windshield, a handbag, any footprints, fabric on the door handle' },
+  c2: { d: 'A jeepney terminal at night under a corrugated metal roof with white fluorescent tubes. Left background: the silhouette of an old clock tower with a lit clock face, light rain in the sky. A colourful classic Filipino jeepney parked side-on FACING LEFT across the middle (about 12%–84% of the width, 43%–82% of the height): cream body with red, blue and yellow stripes, chrome horse ornaments on the hood, open passenger windows, roof rack, an EMPTY blank white signboard on the roof front. A small wooden dispatcher table with an open logbook at the far right. Concrete floor with a dashed yellow line.', no: 'a cash box, a toolbox under the jeep, a balut basket, tools on the ground, an amulet, handprints, letters on the signboard' },
+  c3: { d: 'Inside a karaoke VIP room: purple walls with a diamond wallpaper pattern, a pink neon strip along the ceiling, a silver disco ball top right. A big flat TV on the left wall (screen about 9%–53% of the width, 17%–55% of the height) with a plain BLACK screen. A red velvet sofa on the right, a wooden door at the far right with a small gold plaque. A low dark glass coffee table across the foreground with a pitcher of yellow juice, an ice bucket and a pink songbook. Dark carpet floor.', no: 'drinking glasses, a green ledger book, a microphone, jewellery, a matchbook, anything on the TV screen' },
+  c4: { d: 'Plaza Miranda in Quiapo at night after light rain: the cream baroque facade of a large church with a dome and two bell towers, warm light from the open church door, city buildings behind. Stone plaza pavement. Left: a candle vendor stall with a red-and-white canopy and rows of colourful burning prayer candles. Right: an amulet stall with a blue canopy, a wooden bar with a row of small hooks holding seven small bronze and silver amulets — the MIDDLE hook is empty — plus small bottles of herbal oil on a table with a red cloth. A few grey pigeons.', no: 'a gold amulet, a candlestick, a coin tin, broken glasses, receipts, cards' },
+  c5: { d: 'Inside an old fabric warehouse at night: corrugated metal walls, one hanging bulb, a tall wooden shelf on the left packed with colourful fabric rolls, a plain upper-right wall area (a window will be added there), an empty fire-extinguisher wall bracket in the middle, a wooden office desk on the right with a phone and a lamp, two wooden crates, concrete floor.', no: 'a window, a fire extinguisher, fire or burn marks, a fuel can, a lighter, keys, papers on the floor' },
+  c6: { d: 'Fort Santiago in Intramuros at night under a full moon: a long old adobe stone wall with battlements across the middle, a large arched iron-barred gate on the left, an old black cannon on a wooden carriage in the center, a wooden bench on the right, an acacia tree top right, cobblestone ground, a starry sky. A plain black iron lamp POST left of center with no lamp head on top (the lamp head is added later).', no: 'a padlock, a lamp head, a flashlight, a nightstick, papers, photographs' },
+  c7: { d: 'An old ferry station on the Pasig River at night with fog: old Escolta buildings and a pink neon sign across the river, a white river ferry with a blue stripe docked on the right, a wooden pier across the bottom left with posts, a ticket booth with a red roof and a lit window on the far left, a lamp post with an orange life ring on the pier, a metal mooring cleat on the pier edge. Dark water.', no: 'a small boat, ropes, a briefcase, a pipe, an earpiece, cards, envelopes' },
+  c8: { d: 'Inside an old 1950s printing shop on a rainy night: ochre walls, a tall arched art-deco window on the left with rain and a blue neon glow outside, a huge dark green cast-iron printing press with a big flywheel in the center, stacks of white paper on the right, a wooden staircase going up on the far right (leave a plain gap in its railing between 50% and 75% of the height), a clothesline string across the upper right, a small wooden desk with an old black typewriter on the left (no paper in it), one hanging lamp, dark wooden floor.', no: 'film negatives, paper in the typewriter, footprints, a lens cap, newspapers on the floor' },
+  c9: { d: 'A grand hotel ballroom during a charity gala, no people: deep red velvet curtains on both sides, a gold patterned wall, a crystal chandelier at the top center, a small stage on the right with a wooden podium and a red banner (no readable text), a champagne glass tower on the left, a big round table with a white tablecloth in the foreground center with a flower centerpiece and two wine glasses, red carpet floor.', no: 'a third wine glass, a glove, a phone, cards, a ring, a vial' }
+};
+
+/* ---------------- clue sprites: [before, after] (null = not needed) ---------------- */
+const SPR = {
+  c1: { boot: [null, 'a single muddy work-boot print with heavy tread on wet asphalt, brown mud'], fabric: [null, 'a small torn scrap of dark navy uniform fabric with yellow stitching, hanging as if snagged'], clock: ['a small car dashboard digital clock with green digits showing 6:50', 'the same dashboard clock with cracked glass and red digits showing 7:05'], key: ['a closed brown leather handbag with a brass key ring holding one large gold key', 'the same brown handbag, open and empty, with an empty brass key ring'], mirror: ['a maroon car side mirror, intact', 'the same maroon car side mirror bent downward with its glass cracked'], ticket: [null, 'a small old paper pawn ticket with "A-13" stamped in red, tucked under a black windshield wiper'] },
+  c2: { sign: ['a white jeepney roof signboard reading DIVISORIA in red block letters', 'the same white signboard reading GARAHE in blue block letters'], cashbox: ['a blue metal cash box with a handle and a brass lock', null], hand: [null, 'a black greasy handprint smear'], toolbox: ['a closed grey metal toolbox', 'the same grey toolbox with its lid hanging open, dark and empty inside'], wrench: [null, 'a steel lug wrench with a blue electrical-tape grip and a small dark stain on the tip, lying on the ground'], basket: ['a woven balut vendor basket with a white cloth cover and a small gas lamp on top', 'the same basket tipped over on its side with several white eggs spilled'], anting: [null, 'a tarnished brass amulet medallion with an eye inside a triangle, on a thin cord'] },
+  c3: { tv: ['a karaoke TV screen glowing blue and purple with a few blurry lyric lines and a progress bar (no readable words)', 'the same TV screen, dark blue, with a big white pause symbol and red digital numbers 23:07'], glass: ['a tall glass of yellow calamansi juice', 'the same glass with a ring of white powder at the rim and white specks around the base'], ledger: ['a green hardbound accounting ledger book lying flat', null], mic: ['a wireless karaoke microphone lying on a table', 'the same microphone lying on dark carpet with its cord trailing'], cufflink: [null, 'a single small gold cufflink, glinting'], matchbook: [null, 'a black matchbook with a red crow emblem and the number 13'] },
+  c4: { amulet: ['a gold amulet medallion with a triangle emblem hanging from a hook', null], kandelero: ['a brass candlestick with a white candle, standing upright', 'the same brass candlestick lying on its side on stone pavement with a small blood drop beside it'], lens: [null, 'a cracked round eyeglass lens with a piece of gold rim'], tin: ['a small grey tin can of coins, upright', 'the same tin knocked over with gold coins spilled'], resibo: [null, 'a crumpled restaurant receipt with "20:40" printed in red'], radio: [null, 'a laminated navy blue police radio call-sign card reading BRAVO 13'] },
+  c5: { apoy: [null, 'a scorched black burn patch with small dying orange flames and soot, as on the bottom of a fabric shelf'], extinguisher: ['a red fire extinguisher', null], bintana: ['a closed barred warehouse window with glass panes and rainy night outside', 'the same window with one glass pane swung open'], gasolina: [null, 'a red plastic gasoline jerrycan, nearly empty'], lighter: [null, 'a silver flip-top lighter engraved "WC"'], susi: [null, 'a car key with a gold letter-C keychain'], roster: [null, 'a torn piece of a typed duty roster with "R.D." circled in red ink'] },
+  c6: { padlock: ['a closed brass padlock hanging on an iron bar', 'the same brass padlock hanging open, unlocked'], ilaw: ['an old black iron street-lamp head, lit with warm yellow light', 'the same lamp head, unlit and dark'], flashlight: [null, 'a black guard flashlight with yellow "FS" letters, lying on cobblestones'], batuta: [null, 'a black police nightstick with a dark stain on the tip'], sulat: [null, 'a crumpled handwritten note on cream paper'], litrato: [null, 'an old faded photograph of two policemen, one face scratched out'] },
+  c7: { briefcase: ['a closed brown leather briefcase with papers sticking out', 'the same briefcase wide open and empty'], tubo: [null, 'a steel pipe with a blood stain on one end'], earpiece: [null, 'a black security earpiece with a clear coiled cord'], card: [null, 'a black business card with gold letters "MEDINA SECURITY"'], lubid: ['a small green motorboat tied with rope to a metal mooring cleat', 'a loose untied rope lying coiled beside a metal mooring cleat, no boat'], selyo: [null, 'a torn envelope with a red wax seal stamped with a crow'] },
+  c8: { negatives: ['two strips of photo film negatives hanging from a string with wooden clothespins', 'only two empty wooden clothespins on the string'], artikulo: ['a sheet of paper in an old black typewriter', 'a torn stub of paper left in the typewriter with a few typed words'], hagdan: ['an intact wooden stair railing section', 'the same railing snapped and splintered'], tinta: [null, 'a trail of blue ink shoeprints'], lenscap: [null, 'a black camera lens cap marked "GL"'], diyaryo: [null, 'an old yellowed newspaper clipping with a black-and-white photo'] },
+  c9: { glass: ['a red wine glass standing upright', 'the same wine glass tipped over, spilled red wine, white residue inside'], vial: [null, 'a tiny clear glass vial'], glove: [null, 'a single long white silk glove'], speechcard: [null, 'a white speech card with red handwriting signed "A.M."'], phone: [null, 'a smartphone with a lit blue screen'], singsing: [null, 'a gold ring with a black crow emblem'] }
+};
+
+/* ---------------- backgrounds ---------------- */
+const BG = {
+  office: "Inspector Mateo's police office at night: dark brown striped wallpaper, a window at the upper right with a rainy city and neon signs outside (no readable text), a wooden desk along the bottom with a green desk lamp casting warm light on the left.",
+  street: 'A rainy Manila street at night: old buildings with lit windows, pink, green and cyan neon signs (no readable text), wet road reflecting the neon, heavy rain.',
+  interrog: 'A police interrogation room: dark brick wall, one hanging lamp casting a warm pool of light in the center, the edge of a wooden table along the bottom.',
+  cork: 'Close-up of an empty cork bulletin board in a dark wooden frame, warm light, no papers.',
+  dark: 'An almost black background with a faint deep red haze in the center, very dark and subtle.',
+  dawn: 'Manila North Cemetery at dawn: pink and orange sky, a pale sun low on the right, rows of small white tombs and crosses in silhouette, a distant city skyline.',
+  desk: "Inspector Mateo's office desk at night, front view. The layout must match these positions: a cork board with red string and pinned papers TOP-LEFT (2%–35% of the width, 5%–52% of the height); a calendar on the wall in the middle; a big rainy window TOP-RIGHT (60%–97% width, 5%–56% height) with neon signs outside (no readable text); a wooden desk across the bottom third; a black rotary phone bottom-left (15%–27% width, 70%–82% height); an old typewriter bottom-center (40%–64% width, 67%–89% height); a stack of case folders in the bottom-left corner (10%–30% width, 81%–97% height); a white coffee mug bottom-right (79%–86% width, 70%–87% height); a green desk lamp right of center; a standing electric fan at the far right; a small framed photo of an older policeman on the desk."
+};
+
+/* ---------------- build all prompts ---------------- */
+function build(style) {
+  const S = STYLES[style], out = [];
+  GAME.chars.forEach((id) => {
+    variantsOf(id).forEach((v) => {
+      const file = v === 'neutral' ? `chars/${id}.png` : `chars/${id}-${v}.png`;
+      const ref = v === 'neutral' ? '' : `Use chars/${id}.png as the reference image: the SAME character with an identical face, hair, outfit, colours and proportions — only the ${v === 'point' ? 'pose' : 'expression'} changes. `;
+      out.push({ grp: 'chars', file, req: v === 'neutral', who: id, ctx: caseOfChar(id), label: v === 'neutral' ? 'base' : v,
+        text: `${ref}Original character art for a Filipino noir detective game. ${S.char} The character: ${CH[id]} ${EXPR[v]} ${S.look} ${GREEN}` });
+    });
+  });
+  GAME.cases.forEach((c) => {
+    const sc = SC[c.id], spr = SPR[c.id] || {};
+    const spots = c.clues.map((cl) => `${Math.round(cl.x / 6)}% across, ${Math.round(cl.y / 4)}% down`).join('; ');
+    out.push({ grp: 'scenes', file: `scenes/${c.id}.png`, req: true, who: `Case #${c.num}`, ctx: c.title, label: 'background',
+      text: `Original background art for a Filipino noir detective game. ${S.scene} The scene: ${sc.d} Keep these spots free of clutter, because small objects will be placed on top later: ${spots}. Do NOT draw: ${sc.no}. ${S.look.replace('NO glow on the subject, NO gradients on the subject, ', '')}` });
+    c.clues.forEach((cl) => {
+      const pair = spr[cl.id]; if (!pair) return;
+      ['before', 'after'].forEach((side, i) => {
+        const d = pair[i]; if (!d) return;
+        const other = pair[1 - i];
+        const ref = i === 1 && other ? `Use clues/${c.id}-${cl.id}-before.png as the reference image: the SAME object, same size, angle, colours and position in the frame, with only this change. ` : '';
+        out.push({ grp: 'clues', file: `clues/${c.id}-${cl.id}-${side}.png`, req: true, who: `Case #${c.num}`, ctx: `${cl.id}${cl.meta ? ' (Ang Anino clue)' : ''} · ${side === 'before' ? 'CCTV / before' : 'crime scene / after'}`, label: side,
+          text: `${ref}Original object sprite for a Filipino noir detective game. ${S.sprite} The object: ${d}. ${S.look} ${GREEN}` });
+      });
+    });
+  });
+  Object.keys(BG).forEach((k) => {
+    out.push({ grp: 'bg', file: `bg/${k}.png`, req: false, who: k === 'desk' ? 'Office hub' : 'Comic panel', ctx: k, label: k,
+      text: `Original background art for a Filipino noir detective game. ${k === 'desk' ? S.desk : S.scene} The scene: ${BG[k]} ${S.look.replace('NO glow on the subject, NO gradients on the subject, ', '')}` });
+  });
+  return out;
+}
+
+/* ---------------- UI ---------------- */
+const GN = { chars: ['Characters', 'Full body on green screen. The game crops head-and-shoulders portraits from these, and uses the whole figure in the lineup and the comics. Optional expressions fall back to the base image.'], scenes: ['Scene backgrounds', 'One clean background per case — no clue objects. The game adds the clue sprites on top, so the CCTV and crime-scene pictures differ only by the clues.'], clues: ['Clue sprites', '"before" appears on the CCTV picture, "after" on the crime-scene picture. Objects that disappear only need a before; new objects only need an after. Make the after from the before so they match.'], bg: ['Comic and office backgrounds', 'Optional. Used behind the comic panels and the office hub. Note: an office image replaces the drawn desk, including the shop items (cat, radio, plant).'] };
+const st = { style: 'komiks', grp: 'all', req: 'all', q: '' };
+let done = {};
+try { done = JSON.parse(localStorage.getItem('kaso-art-done') || '{}'); } catch (e) { done = {}; }
+const saveDone = () => { try { localStorage.setItem('kaso-art-done', JSON.stringify(done)); } catch (e) { /* ignore */ } };
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function render() {
+  const all = build(st.style), q = st.q.toLowerCase();
+  const items = all.filter((it) => (st.grp === 'all' || it.grp === st.grp) && (st.req === 'all' || it.req) && (!q || (it.file + ' ' + it.who + ' ' + it.ctx + ' ' + it.text).toLowerCase().includes(q)));
+  const nDone = all.filter((it) => done[it.file]).length, nReq = all.filter((it) => it.req).length;
+  document.getElementById('count').innerHTML = `${items.length} shown · ${all.length} total · ${nReq} required · <b>${nDone} done</b>`;
+  let html = '', last = '';
+  items.forEach((it, i) => {
+    if (it.grp !== last) { last = it.grp; const n = items.filter((x) => x.grp === it.grp).length; html += `<h2>${GN[it.grp][0]} <small>${n} prompts</small></h2><p class="gnote">${GN[it.grp][1]}</p>`; }
+    html += `<article class="card ${it.req ? 'req' : ''} ${done[it.file] ? 'done' : ''}">
+      <div class="head"><span class="file">assets/art/${esc(it.file)}</span><span class="tag ${it.req ? 'req' : ''}">${it.req ? 'Required' : 'Optional'}</span><span class="who">${esc(it.who)}</span><span class="tag">${esc(it.ctx)}</span><span class="sp"></span>
+      <label><input type="checkbox" data-f="${esc(it.file)}" ${done[it.file] ? 'checked' : ''}> Done</label><button class="copy" data-i="${i}">Copy prompt</button></div>
+      <pre>${esc(it.text)}</pre></article>`;
+  });
+  const list = document.getElementById('list');
+  list.innerHTML = html || '<p class="empty">Nothing matches this filter.</p>';
+  list.querySelectorAll('.copy').forEach((b) => b.addEventListener('click', () => {
+    const t = items[+b.dataset.i].text, ok = () => { b.textContent = 'Copied ✓'; b.classList.add('ok'); setTimeout(() => { b.textContent = 'Copy prompt'; b.classList.remove('ok'); }, 1500); };
+    const pre = b.closest('.card').querySelector('pre');
+    try { navigator.clipboard.writeText(t).then(ok, () => selectText(pre)); } catch (e) { selectText(pre); }
+  }));
+  list.querySelectorAll('input[type=checkbox]').forEach((c) => c.addEventListener('change', () => { if (c.checked) done[c.dataset.f] = 1; else delete done[c.dataset.f]; saveDone(); render(); }));
+}
+function selectText(el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+['style', 'grp', 'req'].forEach((k) => document.querySelectorAll(`#${k} button`).forEach((b) => b.addEventListener('click', () => {
+  st[k] = b.dataset.v; document.querySelectorAll(`#${k} button`).forEach((x) => x.setAttribute('aria-pressed', String(x === b))); render();
+})));
+document.getElementById('q').addEventListener('input', (e) => { st.q = e.target.value; render(); });
+render();
+</script>
+
+</body>
+</html>

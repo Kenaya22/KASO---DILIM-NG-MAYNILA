@@ -27,6 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Collect site files
         run: |
+          python3 tools/art_manifest.py
           mkdir -p _site
           cp -r index.html manifest.json sw.js css js assets _site/
           touch _site/.nojekyll
